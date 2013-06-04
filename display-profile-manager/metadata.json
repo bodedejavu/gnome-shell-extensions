@@ -1,7 +1,7 @@
 {
     "uuid": "display-profile-manager@bodedejavu.github.com",
     "name": "Display Profile Manager",
-    "description": "Create and manage display profiles and access them easy in the GNOME Shell.\nA profile can store one or multiple monitors with its configuration (e.g.: resolution, refresh rate...).",
+    "description": "Create and manage display profiles and access them easy in the GNOME Shell. A profile can store one or multiple monitors with its configuration (e.g.: resolution, refresh rate...).",
     "url": "https://github.com/bodedejavu/gnome-shell-extensions",
     "shell-version": ["3.4", "3.6", "3.8"],
     "settings-schema": "org.gnome.shell.extensions.display-profile-manager",

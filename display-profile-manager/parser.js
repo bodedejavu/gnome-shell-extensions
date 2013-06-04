@@ -73,14 +73,14 @@ function getProfileItemAsString(item, j) {
         itemString = item.toString();
         }
     else {
-        itemString = new Array();
+        itemString = '';
         for (let k = 0; k < item.length; k++) {
             if (k == 0 || k == 1)
-                itemString.push(item[k]);
+                itemString += item[k] + DELIMITER_OUTPUT_PROPERTIES;
             else
-                itemString.push(item[k].toString());
+                itemString += item[k].toString() + DELIMITER_OUTPUT_PROPERTIES;
             }
-        itemString = itemString.join(DELIMITER_OUTPUT_PROPERTIES);
+        itemString = itemString.substring(0, itemString.length-DELIMITER_OUTPUT_PROPERTIES.length);
         }
         
     return itemString;
