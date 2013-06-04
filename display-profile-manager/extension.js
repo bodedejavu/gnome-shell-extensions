@@ -38,7 +38,7 @@ const DisplayProfileManager = new Lang.Class({
     Extends: PanelMenu.SystemStatusButton,
     
     _init: function() {
-    	this.parent('preferences-desktop-display-symbolic', 'Display');
+    	this.parent('preferences-desktop-display-symbolic', 'Display Profile Manager');
     	
         this._proxy = new XRandr2(Gio.DBus.session, 'org.gnome.SettingsDaemon', '/org/gnome/SettingsDaemon/XRANDR');
         
@@ -47,7 +47,6 @@ const DisplayProfileManager = new Lang.Class({
             this._screen.init(null);
             }
         catch(e) {
-            // an error means there is no XRandR extension
             this.actor.hide();
             return;
             }
@@ -58,12 +57,12 @@ const DisplayProfileManager = new Lang.Class({
         this._createMenu(false);
         
         this._screen.connect('changed', Lang.bind(this, this._randrEvent));
-        this._settings.connect('changed::' + SETTINGS_KEY_PROFILES, Lang.bind(this, this._onSettingsChanged))
+        this._settings.connect('changed::' + SETTINGS_KEY_PROFILES, Lang.bind(this, this._onSettingsChanged));
         },
         
     _getCurrentSettings: function() {
         let profilesString = this._settings.get_string(SETTINGS_KEY_PROFILES);
-        this._profiles = Parser.getProfilesFromString(profilesString, true);
+        this._profiles = Parser.getProfilesFromString(profilesString);
         },
         
     _onSettingsChanged: function() {
@@ -84,8 +83,8 @@ const DisplayProfileManager = new Lang.Class({
         let outputs = config.get_outputs();
         
         let profileCurrent = this._getCurrentProfile(outputs, config);
-        let profileStringNew = Parser.getProfileAsString(profileCurrent, true);
-       	this._settings.set_string(SETTINGS_KEY_CURRENT_PROFILE, profileStringNew);
+        let profileStringCurrent = Parser.getProfileAsString(profileCurrent);
+       	this._settings.set_string(SETTINGS_KEY_CURRENT_PROFILE, profileStringCurrent);
         
         if (this._profiles.length == 0) {
             item = new PopupMenu.PopupMenuItem('No Profiles defined');
@@ -192,9 +191,7 @@ const DisplayProfileManager = new Lang.Class({
             let outputFound = false;
             for (let j = 0; j < outputs.length; j++) {
                 if (outputs[j].get_name() == profile[i][0]) {
-                    if (outputs[j].is_connected() == false)
-                        return false;
-                    else if (outputs[j].get_display_name() != profile[i][1])
+                    if (outputs[j].is_connected() == false || outputs[j].get_display_name() != profile[i][1])
                         return false;
                     outputFound = true;
                     break;
@@ -235,6 +232,15 @@ const DisplayProfileManager = new Lang.Class({
                	profile.push(iOutput);
                 }
             }
+            
+        let primaryFound = false;
+        for (let i = 2; i < profile.length; i++) {
+            if (profile[i][8] == true)
+                primaryFound = true;
+            }
+        if (primaryFound == false)
+            profile[2][8] = true;
+            
         return profile;
         }
     });

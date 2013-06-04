@@ -29,8 +29,8 @@ const ProfilesSettingsWidget = new GObject.Class({
         this._settings = Convenience.getSettings();
         
         let text;
-        let profileStringNew = this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE);
-        if (!profileStringNew) {
+        let profileStringCurrent = this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE);
+        if (!profileStringCurrent) {
             text = 'Error: Could not detect current screen configuration. Extension seems not to be running.';
             let label = new Gtk.Label({label: text, xalign: 0, margin_bottom: 10});
             this.add(label);
@@ -63,16 +63,16 @@ const ProfilesSettingsWidget = new GObject.Class({
             this.add(checkButton);
             
             let profilesString = this._settings.get_string(SETTINGS_KEY_PROFILES);
-            this._profiles = Parser.getProfilesFromString(profilesString, false);
+            this._profiles = Parser.getProfilesFromString(profilesString);
             
             this._refreshGui(false);
             }
         },
         
     _addProfile: function(obj) {
-        let profileStringNew = this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE);
-        let profileNew = Parser.getProfileFromString(profileStringNew, false);
-        this._profiles.push(profileNew);
+        let profileStringCurrent = this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE);
+        let profileCurrent = Parser.getProfileFromString(profileStringCurrent);
+        this._profiles.push(profileCurrent);
         
         this._saveProfile();
         this._refreshGui(true);
@@ -105,14 +105,15 @@ const ProfilesSettingsWidget = new GObject.Class({
         },
         
     _changeProfile: function(obj, i, j) {
-        this._profiles[i][j] = obj.get_text();
+        let item = obj.get_text();
         
+        this._profiles[i][j] = Parser.getProfileItemFromString(item, j);
         this._saveProfile();
         },
         
     _saveProfile: function() {
-        let profilesStringNew = Parser.getProfilesAsString(this._profiles, false);
-       	this._settings.set_string(SETTINGS_KEY_PROFILES, profilesStringNew);
+        let profilesString = Parser.getProfilesAsString(this._profiles);
+       	this._settings.set_string(SETTINGS_KEY_PROFILES, profilesString);
         },
         
     _refreshGui: function(withReset) {
@@ -135,6 +136,7 @@ const ProfilesSettingsWidget = new GObject.Class({
            	let buttonsText = new Array('Down', 'Up', 'Del');
            	let buttonsMargin = new Array(5, 0, 5);
            	let labelsText = new Array('Profile Name', 'Clone', 'Outputs (Name | Display Name | X | Y | Width | Height | Refresh Rate | Rotation | Primary)');
+           	let itemString;
            	
             for (let i = 0; i < labelsText.length; i++) {
                 iLabel = new Gtk.Label({label: labelsText[i], margin_bottom: 5});
@@ -145,22 +147,25 @@ const ProfilesSettingsWidget = new GObject.Class({
                 iLabel = new Gtk.Label({label: (i+1).toString() + '.', xalign: 0, margin_right: 5});
                 grid.attach(iLabel, 0, i+1, 1, 1);
                 
+                itemString = Parser.getProfileItemAsString(this._profiles[i][0], 0);
                 iEntry = new Gtk.Entry({margin_right: 5});
-                iEntry.set_text(this._profiles[i][0]);
+                iEntry.set_text(itemString);
                 iEntry.connect('changed', Lang.bind(this, this._changeProfile, i, 0));
                 iEntry.set_width_chars(15);
                 grid.attach(iEntry, 1, i+1, 1, 1);
                 
+                itemString = Parser.getProfileItemAsString(this._profiles[i][1], 1);
                 iEntry = new Gtk.Entry({sensitive: isExpert});
-                iEntry.set_text(this._profiles[i][1]);
+                iEntry.set_text(itemString);
                 iEntry.connect('changed', Lang.bind(this, this._changeProfile, i, 1));
                 iEntry.set_width_chars(5);
                 grid.attach(iEntry, 2, i+1, 1, 1);
                 
                 iGrid = new Gtk.Grid();
                 for (let j = 2; j < this._profiles[i].length; j++) {
+                    itemString = Parser.getProfileItemAsString(this._profiles[i][j], j);
                     iEntry = new Gtk.Entry({hexpand: true, sensitive: isExpert});
-                    iEntry.set_text(this._profiles[i][j]);
+                    iEntry.set_text(itemString);
             		iEntry.connect('changed', Lang.bind(this, this._changeProfile, i, j));
                     iGrid.attach(iEntry, j-2, 0, 1, 1);
                     }
