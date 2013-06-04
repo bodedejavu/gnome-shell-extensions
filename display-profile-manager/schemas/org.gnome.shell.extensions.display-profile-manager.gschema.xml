@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="display-profile-manager">
+  <schema path="/org/gnome/shell/extensions/display-profile-manager/" id="org.gnome.shell.extensions.display-profile-manager">
+    <key type="s" name="profiles">
+      <default>""</default>
+      <summary>All defined profiles</summary>
+    </key>
+    <key type="s" name="current-profile">
+      <default>""</default>
+      <summary>Current profile</summary>
+    </key>
+    <key type="b" name="expert-mode">
+      <default>false</default>
+      <summary>Expert mode</summary>
+    </key>
+  </schema>
+</schemalist>
