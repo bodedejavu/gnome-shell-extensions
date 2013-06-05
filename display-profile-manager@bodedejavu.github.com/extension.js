@@ -82,7 +82,7 @@ const DisplayProfileManager = new Lang.Class({
         let config = GnomeDesktop.RRConfig.new_current(this._screen);
         let outputs = config.get_outputs();
         
-        let profileCurrent = this._getCurrentProfile(outputs, config);
+        let profileCurrent = this._getCurrentProfile(config, outputs);
         let profileStringCurrent = Parser.getProfileAsString(profileCurrent);
        	this._settings.set_string(SETTINGS_KEY_CURRENT_PROFILE, profileStringCurrent);
         
@@ -203,7 +203,7 @@ const DisplayProfileManager = new Lang.Class({
         return true;
         },
         
-    _getCurrentProfile: function(outputs, config) {
+    _getCurrentProfile: function(config, outputs) {
         let profile = new Array();
         profile.push('Unnamed');
         profile.push(config.get_clone());
