@@ -56,8 +56,15 @@ const DisplayProfileManager = new Lang.Class({
        	this._getCurrentSettings();
         this._createMenu(false);
         
-        this._screen.connect('changed', Lang.bind(this, this._randrEvent));
-        this._settings.connect('changed::' + SETTINGS_KEY_PROFILES, Lang.bind(this, this._onSettingsChanged));
+        this._handlerIdScreen = this._screen.connect('changed', Lang.bind(this, this._randrEvent));
+        this._handlerIdSettings = this._settings.connect('changed::' + SETTINGS_KEY_PROFILES, Lang.bind(this, this._onSettingsChanged));
+        },
+        
+    cleanup: function() {
+        if (this._handlerIdScreen)
+            this._screen.disconnect(this._handlerIdScreen);
+        if (this._handlerIdSettings)
+            this._settings.disconnect(this._handlerIdSettings);
         },
         
     _getCurrentSettings: function() {
@@ -87,7 +94,7 @@ const DisplayProfileManager = new Lang.Class({
        	this._settings.set_string(SETTINGS_KEY_CURRENT_PROFILE, profileStringCurrent);
         
         if (this._profiles.length == 0) {
-            item = new PopupMenu.PopupMenuItem('No Profiles defined');
+            item = new PopupMenu.PopupMenuItem('No profiles defined');
             item.actor.reactive = false;
             this.menu.addMenuItem(item);
             }
@@ -257,6 +264,7 @@ function enable() {
     }
     
 function disable() {
+    _displayProfileManager.cleanup();
     _displayProfileManager.destroy();
     }
     
