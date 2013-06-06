@@ -5,5 +5,5 @@
     "url": "https://github.com/bodedejavu/gnome-shell-extensions",
     "shell-version": ["3.4", "3.6", "3.8"],
     "settings-schema": "org.gnome.shell.extensions.display-profile-manager",
-    "version": 2
+    "version": 3
 }
