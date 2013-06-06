@@ -2,16 +2,19 @@
 <schemalist gettext-domain="display-profile-manager">
   <schema path="/org/gnome/shell/extensions/display-profile-manager/" id="org.gnome.shell.extensions.display-profile-manager">
     <key type="s" name="profiles">
-      <default>""</default>
+      <default>''</default>
       <summary>All defined profiles</summary>
+      <description>Data structure of all defined profiles</description>
     </key>
     <key type="s" name="current-profile">
-      <default>""</default>
+      <default>''</default>
       <summary>Current profile</summary>
+      <description>Data structure of the current profile</description>
     </key>
     <key type="b" name="expert-mode">
       <default>false</default>
       <summary>Expert mode</summary>
+      <description>Expert mode on or off in the extension settings</description>
     </key>
   </schema>
 </schemalist>

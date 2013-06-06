@@ -1,7 +1,7 @@
 gnome-shell-extensions
 ======================
 
-Display Profile Manager (display-profile-manager@bodedejavu.github.com)
+Display Profile Manager
 -------------------------------------------------
 
 Create and manage display profiles and access them easy in the GNOME Shell. A profile consists of one or multiple monitors with its configuration (e.g.: resolution, rotation, refresh rate...).  

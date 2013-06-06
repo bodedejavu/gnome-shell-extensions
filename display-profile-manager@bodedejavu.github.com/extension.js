@@ -124,23 +124,23 @@ const DisplayProfileManager = new Lang.Class({
         item.connect('activate', Lang.bind(this, this._setProfile, config, outputs, profile));
         this.menu.addMenuItem(item);
         
-        let profileCaption;
-        let profileCaptionPfix = '';
-        if (profile[1] == true)
-            profileCaptionPfix = '(Cloned) ';
+        let profileDescription;
         for (let i = 2; i < profile.length; i++) {
-             profileCaption = '   ' + profile[i][1] + ' - '  + profileCaptionPfix + profile[i][4] + 'x'  + profile[i][5] + '@'  + profile[i][6] + 'Hz';
-             item = new PopupMenu.PopupMenuItem(profileCaption);
-             item.actor.reactive = false;
-             this.menu.addMenuItem(item);
-             }        
+            profileDescription = '';
+            profileDescription += '   ' + profile[i][1] + ' - ' + profile[i][4] + 'x' + profile[i][5] + '@' + profile[i][6] + 'Hz';
+            if (profile[1] == true)
+                profileDescription += ' (Cloned)';
+            item = new PopupMenu.PopupMenuItem(profileDescription);
+            item.actor.reactive = false;
+            this.menu.addMenuItem(item);
+            }
         },
         
     _setProfile: function(item, event, config, outputs, profile) {
         config.save();
         
         for (let i = 0; i < outputs.length; i++) {
-            if (outputs[i].is_connected()) {
+            if (outputs[i].is_connected() == true && outputs[i].is_active() == true) {
                 outputs[i].set_active(false);
                 }
             }
@@ -163,7 +163,7 @@ const DisplayProfileManager = new Lang.Class({
             this._proxy.ApplyConfigurationRemote(0, event.get_time());
             }
         catch (e) {
-            global.log('Could not save monitor configuration: ' + e);
+            global.log('Could not save screen configuration: ' + e);
             }
         },
         
@@ -209,7 +209,7 @@ const DisplayProfileManager = new Lang.Class({
         profile.push(config.get_clone());
         
         for (let i = 0; i < outputs.length; i++) {
-            if (outputs[i].is_connected() && outputs[i].is_active()) {
+            if (outputs[i].is_connected() == true && outputs[i].is_active() == true) {
                 let iOutput = new Array();
                 
                 let name = outputs[i].get_name();                   
@@ -248,7 +248,7 @@ const DisplayProfileManager = new Lang.Class({
     
 let _displayProfileManager;
 
-function init(metadata) {
+function init() {
     }
     
 function enable() {
