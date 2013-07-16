@@ -18,6 +18,9 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Parser = Me.imports.parser;
 
+const Gettext = imports.gettext.domain('display-profile-manager');
+const _ = Gettext.gettext;
+
 const XRandr2Iface = <interface name='org.gnome.SettingsDaemon.XRANDR_2'>
 <method name='ApplyConfiguration'>
     <arg type='x' direction='in'/>
@@ -94,7 +97,7 @@ const DisplayProfileManager = new Lang.Class({
        	this._settings.set_string(SETTINGS_KEY_CURRENT_PROFILE, profileStringCurrent);
         
         if (this._profiles.length == 0) {
-            item = new PopupMenu.PopupMenuItem('No profiles defined');
+            item = new PopupMenu.PopupMenuItem(_("No profiles defined"));
             item.actor.reactive = false;
             this.menu.addMenuItem(item);
             }
@@ -106,9 +109,9 @@ const DisplayProfileManager = new Lang.Class({
             
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 	    
-        this.menu.addSettingsAction('Displays Settings', 'gnome-display-panel.desktop');
+        this.menu.addSettingsAction(_("Displays Settings"), 'gnome-display-panel.desktop');
 	    
-        item = new PopupMenu.PopupMenuItem('Display Profile Manager Settings');
+        item = new PopupMenu.PopupMenuItem(_("Display Profile Manager Settings"));
         item.connect('activate', function() {
             let app = Shell.AppSystem.get_default().lookup_app('gnome-shell-extension-prefs.desktop');
             if (app != null)
@@ -256,6 +259,7 @@ const DisplayProfileManager = new Lang.Class({
 let _displayProfileManager;
 
 function init() {
+    Convenience.initTranslations("display-profile-manager");
     }
     
 function enable() {
