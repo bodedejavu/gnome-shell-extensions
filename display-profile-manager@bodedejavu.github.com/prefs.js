@@ -12,6 +12,8 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Parser = Me.imports.parser;
 
+const Gettext = imports.gettext.domain('display-profile-manager');
+const _ = Gettext.gettext;
 
 const SETTINGS_KEY_PROFILES = 'profiles';
 const SETTINGS_KEY_CURRENT_PROFILE = 'current-profile';
@@ -31,28 +33,28 @@ const ProfilesSettingsWidget = new GObject.Class({
         let text;
         let profileStringCurrent = this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE);
         if (!profileStringCurrent) {
-            text = 'Error: Could not detect current screen configuration. Extension seems not to be running.';
+            text = _("Error: Could not detect current screen configuration. Extension seems not to be running.");
             let label = new Gtk.Label({label: text, xalign: 0, margin_bottom: 10});
             this.add(label);
             }
         else {
-            let label1 = new Gtk.Label({label: '<b>Create Profile</b>', use_markup: true, xalign: 0, margin_bottom: 10});
+            let label1 = new Gtk.Label({label: '<b>'+_("Create Profile")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
             
-            text = 'Set up your screen configuration in the "Displays Settings" dialog. By pressing the button below your configuration will be saved as a profile. In the "Manage Profiles" section you can modify your stored profiles.';
+            text = _("Set up your screen configuration in the \"Displays Settings\" dialog. By pressing the button below your configuration will be saved as a profile. In the \"Manage Profiles\" section you can modify your stored profiles.");
             let label2 = new Gtk.Label({label: text, use_markup: true, xalign: 0, margin_left:20, margin_bottom: 10});
             label2.set_line_wrap(true);
             
-            let button = new Gtk.Button({label: 'Create a profile with current screen configuration', margin_left:20, margin_bottom: 10});
+            let button = new Gtk.Button({label: _("Create a profile with current screen configuration"), margin_left:20, margin_bottom: 10});
             button.connect('clicked', Lang.bind(this, this._addProfile));
             
-            let label3 = new Gtk.Label({label: '<b>Manage Profiles</b>', use_markup: true, xalign: 0, margin_bottom: 10});
+            let label3 = new Gtk.Label({label: '<b>'+_("Manage Profiles")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
             
-            text = 'The character "|" must not be used in the entry fields, except in the "Outputs" entries where it seperates the properties.\nPlease use the "Expert Mode" only if you know what you are doing.';
+            text = _("The character \"|\" must not be used in the entry fields, except in the \"Outputs\" entries where it seperates the properties.\nPlease use the \"Expert Mode\" only if you know what you are doing.");
             let label4 = new Gtk.Label({label: text, use_markup: true, xalign: 0, margin_left:20, margin_bottom: 10});
             label4.set_line_wrap(true);
             
             let isExpert = this._settings.get_boolean(SETTINGS_KEY_EXPERT_MODE);
-            let checkButton = new Gtk.CheckButton({label:'Expert Mode', active: isExpert, margin_left:20, margin_bottom: 10});
+            let checkButton = new Gtk.CheckButton({label:_("Expert Mode"), active: isExpert, margin_left:20, margin_bottom: 10});
             checkButton.connect('toggled', Lang.bind(this, this._changeExpertMode));
             
             this.add(label1);
@@ -133,9 +135,9 @@ const ProfilesSettingsWidget = new GObject.Class({
            	let iGrid;
            	let iLabel;
            	let iButton;
-           	let buttonsText = new Array('Down', 'Up', 'Del');
+           	let buttonsText = new Array(_("Down"), _("Up"), _("Del"));
            	let buttonsMargin = new Array(5, 0, 5);
-           	let labelsText = new Array('Profile Name', 'Clone', 'Outputs (Name | Display Name | X | Y | Width | Height | Refresh Rate | Rotation | Primary)');
+           	let labelsText = new Array(_("Profile Name"), _("Clone"), _("Outputs")+' ('+_("Name")+' | '+_("Display Name")+' | '+_("X")+' | '+_("Y")+' | '+_("Width")+' | '+_("Height")+' | '+_("Refresh Rate")+' | '+_("Rotation")+' | '+_("Primary")+')');
            	let itemString;
            	
             for (let i = 0; i < labelsText.length; i++) {
@@ -190,6 +192,7 @@ const ProfilesSettingsWidget = new GObject.Class({
     
     
 function init() {
+    Convenience.initTranslations("display-profile-manager");
     }
     
 function buildPrefsWidget() {

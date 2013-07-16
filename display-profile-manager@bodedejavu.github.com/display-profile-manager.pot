@@ -1,0 +1,126 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-07-16 15:39+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: prefs.js:36
+msgid ""
+"Error: Could not detect current screen configuration. Extension seems not to "
+"be running."
+msgstr ""
+
+#: prefs.js:41
+msgid "Create Profile"
+msgstr ""
+
+#: prefs.js:43
+msgid ""
+"Set up your screen configuration in the \"Displays Settings\" dialog. By "
+"pressing the button below your configuration will be saved as a profile. In "
+"the \"Manage Profiles\" section you can modify your stored profiles."
+msgstr ""
+
+#: prefs.js:47
+msgid "Create a profile with current screen configuration"
+msgstr ""
+
+#: prefs.js:50
+msgid "Manage Profiles"
+msgstr ""
+
+#: prefs.js:52
+msgid ""
+"The character \"|\" must not be used in the entry fields, except in the "
+"\"Outputs\" entries where it seperates the properties.\n"
+"Please use the \"Expert Mode\" only if you know what you are doing."
+msgstr ""
+
+#: prefs.js:57
+msgid "Expert Mode"
+msgstr ""
+
+#: prefs.js:138
+msgid "Down"
+msgstr ""
+
+#: prefs.js:138
+msgid "Up"
+msgstr ""
+
+#: prefs.js:138
+msgid "Del"
+msgstr ""
+
+#: prefs.js:140
+msgid "Profile Name"
+msgstr ""
+
+#: prefs.js:140
+msgid "Clone"
+msgstr ""
+
+#: prefs.js:140
+msgid "Outputs"
+msgstr ""
+
+#: prefs.js:140
+msgid "Name"
+msgstr ""
+
+#: prefs.js:140
+msgid "Display Name"
+msgstr ""
+
+#: prefs.js:140
+msgid "X"
+msgstr ""
+
+#: prefs.js:140
+msgid "Y"
+msgstr ""
+
+#: prefs.js:140
+msgid "Width"
+msgstr ""
+
+#: prefs.js:140
+msgid "Height"
+msgstr ""
+
+#: prefs.js:140
+msgid "Refresh Rate"
+msgstr ""
+
+#: prefs.js:140
+msgid "Rotation"
+msgstr ""
+
+#: prefs.js:140
+msgid "Primary"
+msgstr ""
+
+#: extension.js:100
+msgid "No profiles defined"
+msgstr ""
+
+#: extension.js:112
+msgid "Displays Settings"
+msgstr ""
+
+#: extension.js:114
+msgid "Display Profile Manager Settings"
+msgstr ""

@@ -1,0 +1,135 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Display Profile Manager Gnome-Shell Extension\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-07-16 15:39+0200\n"
+"PO-Revision-Date: 2013-07-16 15:56+0100\n"
+"Last-Translator: Jonatan Zeidler <jonatan_zeidler@hotmail.de>\n"
+"Language-Team: German <jonatan_zeidler@gmx.de>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"Language: de\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: prefs.js:36
+msgid ""
+"Error: Could not detect current screen configuration. Extension seems not to "
+"be running."
+msgstr ""
+"Fehler: Es konnte keine aktuelle Bildschirmkonfiguration gefunden werden. "
+"Die Erweiterung scheint nicht aktiv zu sein."
+
+#: prefs.js:41
+msgid "Create Profile"
+msgstr "Profil erzeugen"
+
+#: prefs.js:43
+msgid ""
+"Set up your screen configuration in the \"Displays Settings\" dialog. By "
+"pressing the button below your configuration will be saved as a profile. In "
+"the \"Manage Profiles\" section you can modify your stored profiles."
+msgstr ""
+"Im Menü \"Monitore\" können Sie die Bildschirmkonfiguration einstellen. "
+"Durch Klicken der unteren Schaltfläche wird ihre Konfiguration als Profil "
+"gespeichert. Im Abschnitt \"Profile verwalten\" können die gespeicherten "
+"Profile bearbeitet werden."
+
+#: prefs.js:47
+msgid "Create a profile with current screen configuration"
+msgstr "Ein Profil aus der aktuellen Bildschirmkonfiguration erstellen"
+
+#: prefs.js:50
+msgid "Manage Profiles"
+msgstr "Profile verwalten"
+
+#: prefs.js:52
+msgid ""
+"The character \"|\" must not be used in the entry fields, except in the "
+"\"Outputs\" entries where it seperates the properties.\n"
+"Please use the \"Expert Mode\" only if you know what you are doing."
+msgstr ""
+"Das Zeichen \"|\" darf in den Textfeldern nicht benutzt werden, außer in den "
+"\"Ausgaben\", wo damit die einzelnen Werte voneinander getrennt werden."
+
+#: prefs.js:57
+msgid "Expert Mode"
+msgstr "Expertenmodus"
+
+#: prefs.js:138
+msgid "Down"
+msgstr "Runter"
+
+#: prefs.js:138
+msgid "Up"
+msgstr "Hoch"
+
+#: prefs.js:138
+msgid "Del"
+msgstr "Entfernen"
+
+#: prefs.js:140
+msgid "Profile Name"
+msgstr "Profilname"
+
+#: prefs.js:140
+msgid "Clone"
+msgstr "Spiegeln"
+
+#: prefs.js:140
+msgid "Outputs"
+msgstr "Ausgaben"
+
+#: prefs.js:140
+msgid "Name"
+msgstr "Name"
+
+#: prefs.js:140
+msgid "Display Name"
+msgstr "Bildschirmname"
+
+#: prefs.js:140
+msgid "X"
+msgstr "X"
+
+#: prefs.js:140
+msgid "Y"
+msgstr "Y"
+
+#: prefs.js:140
+msgid "Width"
+msgstr "Breite"
+
+#: prefs.js:140
+msgid "Height"
+msgstr "Höhe"
+
+#: prefs.js:140
+msgid "Refresh Rate"
+msgstr "Wiederholrate"
+
+#: prefs.js:140
+msgid "Rotation"
+msgstr "Rotation"
+
+#: prefs.js:140
+msgid "Primary"
+msgstr "Primär"
+
+#: extension.js:100
+msgid "No profiles defined"
+msgstr "Keine Profile angelegt"
+
+#: extension.js:112
+msgid "Displays Settings"
+msgstr "Monitore"
+
+#: extension.js:114
+msgid "Display Profile Manager Settings"
+msgstr "Erweiterungseinstellungen"
