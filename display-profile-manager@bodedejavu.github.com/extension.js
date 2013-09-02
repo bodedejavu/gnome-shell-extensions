@@ -9,6 +9,7 @@ const GnomeDesktop = imports.gi.GnomeDesktop;
 const Lang = imports.lang;
 const Shell = imports.gi.Shell;
 
+const Meta = imports.gi.Meta;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
@@ -34,6 +35,7 @@ const XRandr2 = Gio.DBusProxy.makeProxyWrapper(XRandr2Iface);
 const SETTINGS_KEY_PROFILES = 'profiles';
 const SETTINGS_KEY_CURRENT_PROFILE = 'current-profile';
 const SETTINGS_KEY_EXPERT_MODE = 'expert-mode';
+const SETTINGS_KEY_KEYBINDING_PROFILE = 'keybinding-profile-';
 
 
 const DisplayProfileManager = new Lang.Class({
@@ -54,6 +56,8 @@ const DisplayProfileManager = new Lang.Class({
             return;
             }
             
+        this._keybindings = new Array();
+        
         this._settings = Convenience.getSettings();
         
        	this._getCurrentSettings();
@@ -64,10 +68,26 @@ const DisplayProfileManager = new Lang.Class({
         },
         
     cleanup: function() {
+        this._clear_signals();
+        this._clear_keybindings();
+        },
+        
+    _clear_signals: function() {
         if (this._handlerIdScreen)
             this._screen.disconnect(this._handlerIdScreen);
         if (this._handlerIdSettings)
             this._settings.disconnect(this._handlerIdSettings);
+        },
+        
+    _clear_keybindings: function() {
+        let keybinding;
+        while (this._keybindings.length > 0) {
+            keybinding = this._keybindings.pop();
+            if (Main.wm.addKeybinding)
+                Main.wm.removeKeybinding(keybinding);
+            else
+                global.display.remove_keybinding(keybinding);
+            }
         },
         
     _getCurrentSettings: function() {
@@ -88,6 +108,7 @@ const DisplayProfileManager = new Lang.Class({
         let item;
         if (withReset == true)
             this.menu.removeAll();
+            this._clear_keybindings();
             
         let config = GnomeDesktop.RRConfig.new_current(this._screen);
         let outputs = config.get_outputs();
@@ -103,7 +124,7 @@ const DisplayProfileManager = new Lang.Class({
             }
         else {
             for (let i = 0; i < this._profiles.length; i++) {
-                this._addProfileItem(config, outputs, this._profiles[i], profileCurrent);
+                this._addProfileItem(config, outputs, i, this._profiles[i], profileCurrent);
                 }
             }
             
@@ -120,18 +141,36 @@ const DisplayProfileManager = new Lang.Class({
         this.menu.addMenuItem(item);
         },
         
-    _addProfileItem: function(config, outputs, profile, profileCurrent) {
+    _addProfileItem: function(config, outputs, profileNumber, profile, profileCurrent) {
         let item;
         
-        item = new PopupMenu.PopupMenuItem(profile[0]);
+        item = new PopupMenu.PopupMenuItem((profileNumber+1).toString() + '. ' + profile[0]);
         if (this._checkProfilePossible(outputs, profile) == true) {
             if (this._compareProfiles(profile, profileCurrent) == true)
                 item.setShowDot(true);
+                
+            item.connect('activate', Lang.bind(this, this._setProfileFromMenuItem, config, outputs, profile));
+            
+            if (profileNumber < 9) {
+                let keybinding;
+                let keybinding_name;
+                let keybinding_handler;
+                
+                keybinding_name = SETTINGS_KEY_KEYBINDING_PROFILE + (profileNumber+1).toString();
+                keybinding_handler = Lang.bind(this, this._setProfileFromKeybinding, config, outputs, profile);
+                if (Main.wm.addKeybinding) {
+                    keybinding = Main.wm.addKeybinding(keybinding_name, this._settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL | Shell.KeyBindingMode.MESSAGE_TRAY, keybinding_handler);
+                    this._keybindings.push(keybinding_name);
+                    }
+                else {
+                    keybinding = global.display.add_keybinding(keybinding_name, this._settings, Meta.KeyBindingFlags.NONE, keybinding_handler);
+                    this._keybindings.push(keybinding);
+                    }
+                }
             }
         else {
             item.actor.reactive = false;
             }
-        item.connect('activate', Lang.bind(this, this._setProfile, config, outputs, profile));
         this.menu.addMenuItem(item);
         
         let profileDescription;
@@ -146,7 +185,15 @@ const DisplayProfileManager = new Lang.Class({
             }
         },
         
-    _setProfile: function(item, event, config, outputs, profile) {
+    _setProfileFromMenuItem: function(item, event, config, outputs, profile) {
+        this._setProfile(event.get_time(), config, outputs, profile);
+        },
+        
+    _setProfileFromKeybinding: function(display, screen, dummy, keybinding, config, outputs, profile) {
+        this._setProfile(global.display.get_current_time_roundtrip(), config, outputs, profile);
+        },
+        
+    _setProfile: function(time, config, outputs, profile) {
         config.save();
         
         for (let i = 0; i < outputs.length; i++) {
@@ -170,7 +217,7 @@ const DisplayProfileManager = new Lang.Class({
     	    
         try {
             config.save();
-            this._proxy.ApplyConfigurationRemote(0, event.get_time());
+            this._proxy.ApplyConfigurationRemote(0, time);
             }
         catch (e) {
             global.log('Could not save screen configuration: ' + e);

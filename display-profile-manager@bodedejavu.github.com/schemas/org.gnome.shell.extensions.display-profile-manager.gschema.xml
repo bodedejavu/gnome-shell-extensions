@@ -16,5 +16,50 @@
       <summary>Expert mode</summary>
       <description>Expert mode on or off in the extension settings</description>
     </key>
+    <key type="as" name="keybinding-profile-1">
+      <default>['&lt;Super&gt;&lt;Shift&gt;1']</default>
+      <summary>Switch to profile 1</summary>
+      <description>Set the key combination for switching to profile 1</description>
+    </key>
+    <key type="as" name="keybinding-profile-2">
+      <default>['&lt;Super&gt;&lt;Shift&gt;2']</default>
+      <summary>Switch to profile 2</summary>
+      <description>Set the key combination for switching to profile 2</description>
+    </key>
+    <key type="as" name="keybinding-profile-3">
+      <default>['&lt;Super&gt;&lt;Shift&gt;3']</default>
+      <summary>Switch to profile 3</summary>
+      <description>Set the key combination for switching to profile 3</description>
+    </key>
+    <key type="as" name="keybinding-profile-4">
+      <default>['&lt;Super&gt;&lt;Shift&gt;4']</default>
+      <summary>Switch to profile 4</summary>
+      <description>Set the key combination for switching to profile 4</description>
+    </key>
+    <key type="as" name="keybinding-profile-5">
+      <default>['&lt;Super&gt;&lt;Shift&gt;5']</default>
+      <summary>Switch to profile 5</summary>
+      <description>Set the key combination for switching to profile 5</description>
+    </key>
+    <key type="as" name="keybinding-profile-6">
+      <default>['&lt;Super&gt;&lt;Shift&gt;6']</default>
+      <summary>Switch to profile 6</summary>
+      <description>Set the key combination for switching to profile 6</description>
+    </key>
+    <key type="as" name="keybinding-profile-7">
+      <default>['&lt;Super&gt;&lt;Shift&gt;7']</default>
+      <summary>Switch to profile 7</summary>
+      <description>Set the key combination for switching to profile 7</description>
+    </key>
+    <key type="as" name="keybinding-profile-8">
+      <default>['&lt;Super&gt;&lt;Shift&gt;8']</default>
+      <summary>Switch to profile 8</summary>
+      <description>Set the key combination for switching to profile 8</description>
+    </key>
+    <key type="as" name="keybinding-profile-9">
+      <default>['&lt;Super&gt;&lt;Shift&gt;9']</default>
+      <summary>Switch to profile 9</summary>
+      <description>Set the key combination for switching to profile 9</description>
+    </key>
   </schema>
 </schemalist>
