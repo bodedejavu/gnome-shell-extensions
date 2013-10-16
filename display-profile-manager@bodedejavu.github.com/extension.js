@@ -127,7 +127,6 @@ const DisplayProfileManager = new Lang.Class({
         },
         
     _createMenu: function(withReset) {
-        let item;
         if (withReset == true)
             this.menu.removeAll();
             this._clearKeybindings();
@@ -139,8 +138,16 @@ const DisplayProfileManager = new Lang.Class({
         let profileStringCurrent = Parser.getProfileAsString(profileCurrent);
        	this._settings.set_string(SETTINGS_KEY_CURRENT_PROFILE, profileStringCurrent);
         
+        this._insertProfileItems(config, outputs);
+        this._insertSettingsItems();
+        },
+        
+    _insertProfileItems: function(config, outputs) {
+        let item;
+        let profileCurrent = this._getCurrentProfile(config, outputs);
+        
         if (this._profiles.length == 0) {
-            item = new PopupMenu.PopupMenuItem(_("No profiles defined"));
+            item = new PopupMenu.PopupMenuItem(_("No Profiles Defined"));
             item.actor.reactive = false;
             this.menu.addMenuItem(item);
             }
@@ -149,18 +156,26 @@ const DisplayProfileManager = new Lang.Class({
                 this._addProfileItem(config, outputs, i, this._profiles[i], profileCurrent);
                 }
             }
-            
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-	    
-        this.menu.addSettingsAction(_("Displays Settings"), 'gnome-display-panel.desktop');
-	    
-        item = new PopupMenu.PopupMenuItem(_("Display Profile Manager Settings"));
-        item.connect('activate', function() {
-            let app = Shell.AppSystem.get_default().lookup_app('gnome-shell-extension-prefs.desktop');
-            if (app != null)
-                app.launch(global.display.get_current_time_roundtrip(), ['extension:///' + Me.uuid], -1, null);
-            });
-        this.menu.addMenuItem(item);
+        },
+        
+    _insertSettingsItems: function() {
+        let showDisplaysSettings = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS);
+        let showDisplayProfileManagerSettings = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS);
+        
+        if (showDisplaysSettings == true || showDisplayProfileManagerSettings == true)
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        if (showDisplaysSettings == true) {
+            this.menu.addSettingsAction(_("Displays Settings"), 'gnome-display-panel.desktop');
+            }
+        if (showDisplayProfileManagerSettings == true) {
+            let item = new PopupMenu.PopupMenuItem(_("Display Profile Manager Settings"));
+            item.connect('activate', function() {
+                let app = Shell.AppSystem.get_default().lookup_app('gnome-shell-extension-prefs.desktop');
+                if (app != null)
+                    app.launch(global.display.get_current_time_roundtrip(), ['extension:///' + Me.uuid], -1, null);
+                });
+            this.menu.addMenuItem(item);
+            }
         },
         
     _addProfileItem: function(config, outputs, profileNumber, profile, profileCurrent) {
@@ -195,15 +210,18 @@ const DisplayProfileManager = new Lang.Class({
             }
         this.menu.addMenuItem(item);
         
-        let profileDescription;
-        for (let i = 2; i < profile.length; i++) {
-            profileDescription = '';
-            profileDescription += '   ' + profile[i][1] + ' - ' + profile[i][4] + 'x' + profile[i][5] + '@' + profile[i][6] + 'Hz';
-            if (profile[1] == true)
-                profileDescription += ' (Cloned)';
-            item = new PopupMenu.PopupMenuItem(profileDescription);
-            item.actor.reactive = false;
-            this.menu.addMenuItem(item);
+        let showProfileDescription = this._settings.get_boolean(SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION);
+        if (showProfileDescription == true) {
+            let profileDescription;
+            for (let i = 2; i < profile.length; i++) {
+                profileDescription = '';
+                profileDescription += '   ' + profile[i][1] + ' - ' + profile[i][4] + 'x' + profile[i][5] + '@' + profile[i][6] + 'Hz';
+                if (profile[1] == true)
+                    profileDescription += ' (Cloned)';
+                item = new PopupMenu.PopupMenuItem(profileDescription);
+                item.actor.reactive = false;
+                this.menu.addMenuItem(item);
+                }
             }
         },
         
@@ -253,8 +271,8 @@ const DisplayProfileManager = new Lang.Class({
         let profileA_ = profileA.slice(2);
         let profileB_ = profileB.slice(2);
         
-        profileA_ = profileA_.sort(function(a,b){return a[0]-b[0]});
-        profileB_ = profileB_.sort(function(a,b){return a[0]-b[0]});
+        profileA_ = profileA_.sort(function(a,b){return a[0].localeCompare(b[0])});
+        profileB_ = profileB_.sort(function(a,b){return a[0].localeCompare(b[0])});
         
         for (let i = 0; i < profileA_.length; i++) {
             for (let j = 0; j < profileA_[0].length; j++) {
@@ -361,17 +379,14 @@ const DisplayProfileManager2 = new Lang.Class({
         },
         
     _displayConfigProxyMethodGetResourcesRemote: function(proxy) {
-        log('displayConfigProxyMethodGetResourcesRemote');
         proxy.GetResourcesRemote(Lang.bind(this, this._onMonitorsChanged));
         },
         
     _displayConfigProxyMethodApplyConfigurationRemote: function(proxy) {
-        log('displayConfigProxyMethodApplyConfigurationRemote');
         proxy.ApplyConfigurationRemote(this.serial_out, this.persistent_out, this.crtcs_out, this.outputs_out);
         },
         
     _displayConfigProxySignalMonitorsChanged: function(proxy) {
-        log('displayConfigProxySignalMonitorsChanged');
         this._dbusMonitorsChanged = proxy;
         this._handlerIdMonitorsChanged = proxy.connectSignal('MonitorsChanged', Lang.bind(this,
             function(proxy) {
@@ -386,22 +401,19 @@ const DisplayProfileManager2 = new Lang.Class({
         },
         
     _onSettingsChanged: function() {
-        log('onSettingsChanged');
-        
         this._getCurrentSettings();
         this._createMenu();
         },
         
     _onMonitorsChanged: function(resources) {
-        log('onMonitorsChanged');
-        
         this.serial = resources[0];
         this.crtcs = resources[1];
         this.outputs = resources[2];
         this.modes = resources[3];
         
-        let profileCurrent = this._getCurrentProfile();
-        let profileStringCurrent = Parser.getProfileAsString(profileCurrent);
+        this._profile = this._getCurrentProfile();
+        
+        let profileStringCurrent = Parser.getProfileAsString(this._profile);
         if (profileStringCurrent != this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE))
        	    this._settings.set_string(SETTINGS_KEY_CURRENT_PROFILE, profileStringCurrent);
             
@@ -409,15 +421,18 @@ const DisplayProfileManager2 = new Lang.Class({
         },
         
     _createMenu: function() {
-        let item;
-        
         this.item.menu.removeAll();
         this.item.status.text = '';
         
-        let profileCurrent = this._getCurrentProfile();
+        this._insertProfileItems();
+        this._insertSettingsItems();
+        },
+        
+    _insertProfileItems: function() {
+        let item;
         
         if (this._profiles.length == 0) {
-            item = new PopupMenu.PopupMenuItem(_("No profiles defined"));
+            item = new PopupMenu.PopupMenuItem(_("No Profiles Defined"));
             item.actor.reactive = false;
             this.item.menu.addMenuItem(item);
             }
@@ -425,23 +440,26 @@ const DisplayProfileManager2 = new Lang.Class({
             let is_active;
             let active_set = false;
             for (let i = 0; i < this._profiles.length; i++) {
-                is_active = this._addProfileItem(this._profiles[i], profileCurrent);
+                is_active = this._addProfileItem(this._profiles[i]);
                 if (is_active == true && active_set == false) {
                     this.item.status.text = this._profiles[i][0];
                     active_set = true;
                     }
                 }
             }
-            
+        },
+        
+    _insertSettingsItems: function() {
         let showDisplaysSettings = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS);
         let showDisplayProfileManagerSettings = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS);
+        
         if (showDisplaysSettings == true || showDisplayProfileManagerSettings == true)
             this.item.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-	    if (showDisplaysSettings == true) {
+        if (showDisplaysSettings == true) {
             this.item.menu.addSettingsAction(_("Displays Settings"), 'gnome-display-panel.desktop');
-	        }
+            }
         if (showDisplayProfileManagerSettings == true) {
-            item = new PopupMenu.PopupMenuItem(_("Display Profile Manager Settings"));
+            let item = new PopupMenu.PopupMenuItem(_("Display Profile Manager Settings"));
             item.connect('activate', function() {
                 let app = Shell.AppSystem.get_default().lookup_app('gnome-shell-extension-prefs.desktop');
                 if (app != null)
@@ -451,13 +469,13 @@ const DisplayProfileManager2 = new Lang.Class({
             }
         },
         
-    _addProfileItem: function(profile, profileCurrent) {
+    _addProfileItem: function(profile) {
         let item;
         let is_active = false;
         
         item = new PopupMenu.PopupMenuItem(profile[0]);
         if (this._checkProfilePossible(profile) == true) {
-            if (this._compareProfiles(profile, profileCurrent) == true) {
+            if (this._compareProfiles(profile, this._profile) == true) {
                 item.setOrnament(PopupMenu.Ornament.DOT);
                 is_active = true;
                 }
@@ -482,7 +500,7 @@ const DisplayProfileManager2 = new Lang.Class({
                 this.item.menu.addMenuItem(item);
                 }
             }
-        
+            
         return is_active;
         },
         
@@ -519,8 +537,8 @@ const DisplayProfileManager2 = new Lang.Class({
                 this.crtcs_out.push([this.crtcs[i][0], newMode, profile[profileIndex][2], profile[profileIndex][3], transform, [this.outputs[i][0]], {}]);
                 this.outputs_out.push([this.outputs[i][0], {primary: GLib.Variant.new_boolean(profile[profileIndex][8])}]);
                 }
-                
-        }
+            }
+            
         new this._displayConfigProxyWrapper(Lang.bind(this, this._displayConfigProxyMethodApplyConfigurationRemote));
         },
         
@@ -531,8 +549,8 @@ const DisplayProfileManager2 = new Lang.Class({
         let profileA_ = profileA.slice(2);
         let profileB_ = profileB.slice(2);
         
-        profileA_ = profileA_.sort();
-        profileB_ = profileB_.sort();
+        profileA_ = profileA_.sort(function(a,b){return a[0].localeCompare(b[0])});
+        profileB_ = profileB_.sort(function(a,b){return a[0].localeCompare(b[0])});
         
         for (let i = 0; i < profileA_.length; i++) {
             for (let j = 0; j < profileA_[0].length; j++) {
@@ -567,17 +585,17 @@ const DisplayProfileManager2 = new Lang.Class({
         profile.push(false);
         
         for (let i = 0; i < this.outputs.length; i++) {
-            let crtc_index = this._getCrtcIndex(this.outputs[i][2]);
-            if (crtc_index == -1)
+            let crtcIndex = this._getCrtcIndex(this.outputs[i][2]);
+            if (crtcIndex == -1)
                 continue;
-            let mode_data = this._getDataFromMode(this.crtcs[crtc_index][6]);
+            let modeData = this._getDataFromMode(this.crtcs[crtcIndex][6]);
             
-            let width = mode_data[0];
-            let height = mode_data[1];
-            let refreshRate = mode_data[2];
-            let x = this.crtcs[crtc_index][2];
-            let y = this.crtcs[crtc_index][3];
-            let transform = this.crtcs[crtc_index][7];
+            let width = modeData[0];
+            let height = modeData[1];
+            let refreshRate = modeData[2];
+            let x = this.crtcs[crtcIndex][2];
+            let y = this.crtcs[crtcIndex][3];
+            let transform = this.crtcs[crtcIndex][7];
             let name = this.outputs[i][4];
             let displayName = this.outputs[i][7]['display-name'].unpack();
             let primary = this.outputs[i][7]['primary'].unpack();
@@ -606,7 +624,7 @@ const DisplayProfileManager2 = new Lang.Class({
     _getCrtcIndex: function(crtc) {
         let crtcIndex = -1;
         for (let i = 0; i < this.crtcs.length; i++) {
-            if (this.crtcs[i][0] == crtc) {//id
+            if (this.crtcs[i][0] == crtc) {
                 crtcIndex = i;
                 break;
                 }
@@ -614,10 +632,10 @@ const DisplayProfileManager2 = new Lang.Class({
         return crtcIndex;
         },
         
-    _getModeFromData: function(width, height, freq, i_output) {
+    _getModeFromData: function(width, height, refreshRate, iOutput) {
         let mode = -1;
         for (let i = 0; i < this.modes.length; i++) {
-            if (this.outputs[i_output][5].indexOf(this.modes[i][0]) != -1 && this.modes[i][2] == width && this.modes[i][3] == height && Math.round(this.modes[i][4]) == freq) {
+            if (this.outputs[iOutput][5].indexOf(this.modes[i][0]) != -1 && this.modes[i][2] == width && this.modes[i][3] == height && Math.round(this.modes[i][4]) == refreshRate) {
                 mode = this.modes[i][0];
                 break;
                 }
@@ -628,17 +646,17 @@ const DisplayProfileManager2 = new Lang.Class({
     _getDataFromMode: function(mode) {
         let width = 0;
         let height = 0;
-        let freq = 0;
+        let refreshRate = 0;
         
         for (let i = 0; i < this.modes.length; i++) {
             if (this.modes[i][0] == mode) {
                 width = this.modes[i][2];
                 height = this.modes[i][3];
-                freq = Math.round(this.modes[i][4]);
+                refreshRate = Math.round(this.modes[i][4]);
                 break;
                 }
             }
-        return [width, height, freq];
+        return [width, height, refreshRate];
         }
     });    
     

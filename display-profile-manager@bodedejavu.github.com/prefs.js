@@ -49,11 +49,11 @@ const ProfilesSettingsWidget = new GObject.Class({
             checkButton1.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION));
             
             let isActive2 = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS);
-            let checkButton2 = new Gtk.CheckButton({label:_("Show Displays Settings"), active: isActive2, margin_left:20, margin_bottom: 0});
+            let checkButton2 = new Gtk.CheckButton({label:_("Show \"Displays Settings\""), active: isActive2, margin_left:20, margin_bottom: 0});
             checkButton2.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS));
             
             let isActive3 = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS);
-            let checkButton3 = new Gtk.CheckButton({label:_("Show Display Profile Manager Settings"), active: isActive3, margin_left:20, margin_bottom: 10});
+            let checkButton3 = new Gtk.CheckButton({label:_("Show \"Display Profile Manager Settings\""), active: isActive3, margin_left:20, margin_bottom: 10});
             checkButton3.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS));
             
             let label1 = new Gtk.Label({label: '<b>'+_("Create Profile")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
