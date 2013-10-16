@@ -16,6 +16,21 @@
       <summary>Expert mode</summary>
       <description>Expert mode on or off in the extension settings</description>
     </key>
+    <key type="b" name="show-profile-description">
+      <default>false</default>
+      <summary>Show profile description</summary>
+      <description>Show profile description in the profile menu</description>
+    </key>
+    <key type="b" name="show-displays-settings">
+      <default>false</default>
+      <summary>Show displays settings</summary>
+      <description>Show displays settings in the profile menu</description>
+    </key>
+    <key type="b" name="show-display-profile-manager-settings">
+      <default>true</default>
+      <summary>Show display profile manager settings</summary>
+      <description>Show display profile manager settings in the profile menu</description>
+    </key>
     <key type="as" name="keybinding-profile-1">
       <default>['&lt;Super&gt;&lt;Shift&gt;1']</default>
       <summary>Switch to profile 1</summary>

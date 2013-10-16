@@ -18,6 +18,9 @@ const _ = Gettext.gettext;
 const SETTINGS_KEY_PROFILES = 'profiles';
 const SETTINGS_KEY_CURRENT_PROFILE = 'current-profile';
 const SETTINGS_KEY_EXPERT_MODE = 'expert-mode';
+const SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION = 'show-profile-description';
+const SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS = 'show-displays-settings';
+const SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS = 'show-display-profile-manager-settings';
 const SETTINGS_KEY_KEYBINDING_PROFILE = 'keybinding-profile-';
 
 
@@ -39,6 +42,20 @@ const ProfilesSettingsWidget = new GObject.Class({
             this.add(label);
             }
         else {
+            let label1a = new Gtk.Label({label: '<b>'+_("General Settings")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
+            
+            let isActive1 = this._settings.get_boolean(SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION);
+            let checkButton1 = new Gtk.CheckButton({label:_("Show Profile Description"), active: isActive1, margin_left:20, margin_bottom: 0});
+            checkButton1.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION));
+            
+            let isActive2 = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS);
+            let checkButton2 = new Gtk.CheckButton({label:_("Show Displays Settings"), active: isActive2, margin_left:20, margin_bottom: 0});
+            checkButton2.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS));
+            
+            let isActive3 = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS);
+            let checkButton3 = new Gtk.CheckButton({label:_("Show Display Profile Manager Settings"), active: isActive3, margin_left:20, margin_bottom: 10});
+            checkButton3.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS));
+            
             let label1 = new Gtk.Label({label: '<b>'+_("Create Profile")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
             
             text = _("Set up your screen configuration in the \"Displays Settings\" dialog. By pressing the button below your configuration will be saved as a profile. In the \"Manage Profiles\" section you can modify your stored profiles.");
@@ -56,8 +73,12 @@ const ProfilesSettingsWidget = new GObject.Class({
             
             let isExpert = this._settings.get_boolean(SETTINGS_KEY_EXPERT_MODE);
             let checkButton = new Gtk.CheckButton({label:_("Expert Mode"), active: isExpert, margin_left:20, margin_bottom: 10});
-            checkButton.connect('toggled', Lang.bind(this, this._changeExpertMode));
+            checkButton.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_EXPERT_MODE));
             
+            this.add(label1a);
+            this.add(checkButton1);
+            this.add(checkButton2);
+            this.add(checkButton3);
             this.add(label1);
             this.add(label2);
             this.add(button);
@@ -100,9 +121,9 @@ const ProfilesSettingsWidget = new GObject.Class({
         this._refreshGui(true);
         },
         
-    _changeExpertMode: function(obj) {
-        let isExpert = obj.get_active();
-        this._settings.set_boolean(SETTINGS_KEY_EXPERT_MODE, isExpert);
+    _changeCheckButton: function(obj, settingsKey) {
+        let isActive = obj.get_active();
+        this._settings.set_boolean(settingsKey, isActive);
         
         this._refreshGui(true);
         },
