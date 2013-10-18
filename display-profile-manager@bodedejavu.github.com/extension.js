@@ -355,6 +355,8 @@ const DisplayProfileManager2 = new Lang.Class({
         this.item.icon.icon_name = 'preferences-desktop-display-symbolic';
         this.addMenuItem(this.item);
         
+        this._keybindings = new Array();
+        
         this._settings = Convenience.getSettings();
        	this._getCurrentSettings();
         this._handlerIdSettings = this._settings.connect('changed', Lang.bind(this, this._onSettingsChanged));
@@ -365,6 +367,7 @@ const DisplayProfileManager2 = new Lang.Class({
         
     cleanup: function() {
         this._clearSignals();
+        this._clearKeybindings();
         },
         
     _clearSignals: function() {
@@ -372,6 +375,17 @@ const DisplayProfileManager2 = new Lang.Class({
             this._dbusMonitorsChanged.disconnectSignal(this._handlerIdMonitorsChanged);
         if (this._handlerIdSettings)
             this._settings.disconnect(this._handlerIdSettings);
+        },
+        
+    _clearKeybindings: function() {
+        let keybinding;
+        while (this._keybindings.length > 0) {
+            keybinding = this._keybindings.pop();
+            if (Main.wm.addKeybinding)
+                Main.wm.removeKeybinding(keybinding);
+            else
+                global.display.remove_keybinding(keybinding);
+            }
         },
         
     _displayConfigProxyWrapper: function(callback) {
@@ -423,6 +437,7 @@ const DisplayProfileManager2 = new Lang.Class({
     _createMenu: function() {
         this.item.menu.removeAll();
         this.item.status.text = '';
+        this._clearKeybindings();
         
         this._insertProfileItems();
         this._insertSettingsItems();
@@ -440,7 +455,7 @@ const DisplayProfileManager2 = new Lang.Class({
             let is_active;
             let active_set = false;
             for (let i = 0; i < this._profiles.length; i++) {
-                is_active = this._addProfileItem(this._profiles[i]);
+                is_active = this._addProfileItem(i);
                 if (is_active == true && active_set == false) {
                     this.item.status.text = this._profiles[i][0];
                     active_set = true;
@@ -469,18 +484,35 @@ const DisplayProfileManager2 = new Lang.Class({
             }
         },
         
-    _addProfileItem: function(profile) {
+    _addProfileItem: function(profileIndex) {
         let item;
         let is_active = false;
         
-        item = new PopupMenu.PopupMenuItem(profile[0]);
-        if (this._checkProfilePossible(profile) == true) {
-            if (this._compareProfiles(profile, this._profile) == true) {
+        item = new PopupMenu.PopupMenuItem(this._profiles[profileIndex][0]);
+        if (this._checkProfilePossible(this._profiles[profileIndex]) == true) {
+            if (this._compareProfiles(this._profiles[profileIndex], this._profile) == true) {
                 item.setOrnament(PopupMenu.Ornament.DOT);
                 is_active = true;
                 }
                 
-            item.connect('activate', Lang.bind(this, this._setProfileFromMenuItem, profile));
+            item.connect('activate', Lang.bind(this, this._setProfileFromMenuItem, this._profiles[profileIndex]));
+            
+            if (profileIndex < 9) {
+                let keybinding;
+                let keybinding_name;
+                let keybinding_handler;
+                
+                keybinding_name = SETTINGS_KEY_KEYBINDING_PROFILE + (profileIndex+1).toString();
+                keybinding_handler = Lang.bind(this, this._setProfileFromKeybinding, this._profiles[profileIndex]);
+                if (Main.wm.addKeybinding) {
+                    keybinding = Main.wm.addKeybinding(keybinding_name, this._settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL | Shell.KeyBindingMode.MESSAGE_TRAY, keybinding_handler);
+                    this._keybindings.push(keybinding_name);
+                    }
+                else {
+                    keybinding = global.display.add_keybinding(keybinding_name, this._settings, Meta.KeyBindingFlags.NONE, keybinding_handler);
+                    this._keybindings.push(keybinding);
+                    }
+                }
             }
         else {
             item.actor.reactive = false;
@@ -490,10 +522,10 @@ const DisplayProfileManager2 = new Lang.Class({
         let showProfileDescription = this._settings.get_boolean(SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION);
         if (showProfileDescription == true) {
             let profileDescription;
-            for (let i = 2; i < profile.length; i++) {
+            for (let i = 2; i < this._profiles[profileIndex].length; i++) {
                 profileDescription = '';
-                profileDescription += '   ' + profile[i][1] + ' - ' + profile[i][4] + 'x' + profile[i][5] + '@' + profile[i][6] + 'Hz';
-                if (profile[1] == true)
+                profileDescription += '   ' + this._profiles[profileIndex][i][1] + ' - ' + this._profiles[profileIndex][i][4] + 'x' + this._profiles[profileIndex][i][5] + '@' + this._profiles[profileIndex][i][6] + 'Hz';
+                if (this._profiles[profileIndex][1] == true)
                     profileDescription += ' (Cloned)';
                 item = new PopupMenu.PopupMenuItem(profileDescription);
                 item.actor.reactive = false;
@@ -505,6 +537,10 @@ const DisplayProfileManager2 = new Lang.Class({
         },
         
     _setProfileFromMenuItem: function(item, event, profile) {
+        this._setProfile(profile);
+        },
+        
+    _setProfileFromKeybinding: function(display, screen, dummy, keybinding, profile) {
         this._setProfile(profile);
         },
         

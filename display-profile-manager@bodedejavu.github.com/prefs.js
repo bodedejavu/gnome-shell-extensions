@@ -67,7 +67,7 @@ const ProfilesSettingsWidget = new GObject.Class({
             
             let label3 = new Gtk.Label({label: '<b>'+_("Manage Profiles")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
             
-            text = _("The character \"|\" must not be used in the entry fields, except in the \"Outputs\" entries where it seperates the properties.\nThe first nine profiles can be activated using a \"Keybinding\". For customizing those \"dconf-editor\" is recommended.\nPlease use the \"Expert Mode\" only if you know what you are doing.");
+            text = _("The character \"|\" must not be used in the entry fields, except in the \"Outputs\" entries where it seperates the properties.\nThe first five profiles can be activated using a \"Keybinding\".\nPlease use the \"Expert Mode\" only if you know what you are doing.");
             let label4 = new Gtk.Label({label: text, use_markup: true, xalign: 0, margin_left:20, margin_bottom: 10});
             label4.set_line_wrap(true);
             
@@ -147,6 +147,44 @@ const ProfilesSettingsWidget = new GObject.Class({
         this.add(this._gridProfiles);
         },
         
+    _keyBindingEdited: function(cellrendereraccel, pathString, accelKey, accelMods, hardwareKeyCode, listStore, iter, keyBindingProfileString) {
+        let acceleratorString = Gtk.accelerator_name(accelKey, accelMods);
+        this._updateKeyBinding(acceleratorString, listStore, iter);
+        this._settings.set_strv(keyBindingProfileString, [acceleratorString]);
+        },
+        
+    _keyBindingCleared: function(cellrendereraccel, pathString, listStore, iter, keyBindingProfileString) {
+        this._updateKeyBinding('', listStore, iter);
+        this._settings.set_strv(keyBindingProfileString, []);
+        },
+        
+    _updateKeyBinding: function(acceleratorString, listStore, iter) {
+        let accelKey = 0;
+        let accelMods = 0;
+        if (acceleratorString != '')
+            [accelKey, accelMods] = Gtk.accelerator_parse(acceleratorString);
+        listStore.set(iter, [0, 1], [accelKey, accelMods]);
+        },
+        
+    _createTreeViewKeyBinding: function(keyBindingProfileString) {
+        let treeView = new Gtk.TreeView({headers_visible: false});
+        let listStore = new Gtk.ListStore();
+        listStore.set_column_types([GObject.TYPE_INT, GObject.TYPE_INT]);
+        let iter = listStore.append([0, 0]);
+        treeView.set_model(listStore);
+        let cellrendereraccel = new Gtk.CellRendererAccel({editable: true});
+        cellrendereraccel.connect('accel_edited', Lang.bind(this, this._keyBindingEdited, listStore, iter, keyBindingProfileString));
+        cellrendereraccel.connect('accel_cleared', Lang.bind(this, this._keyBindingCleared, listStore, iter, keyBindingProfileString));
+        let column = new Gtk.TreeViewColumn();
+        column.pack_start(cellrendereraccel, true);
+        column.add_attribute(cellrendereraccel, 'accel-key', 0);
+        column.add_attribute(cellrendereraccel, 'accel-mods', 1);
+        treeView.append_column(column);
+        let acceleratorString = this._settings.get_strv(keyBindingProfileString).toString();
+        this._updateKeyBinding(acceleratorString, listStore, iter);
+        return treeView;
+        },
+        
     _createGridProfiles: function() {
         let grid = new Gtk.Grid({margin_left: 20});
         
@@ -157,6 +195,7 @@ const ProfilesSettingsWidget = new GObject.Class({
            	let iGrid;
            	let iLabel;
            	let iButton;
+           	let iItem;
            	let buttonsText = new Array(_("Down"), _("Up"), _("Del"));
            	let buttonsMargin = new Array(5, 0, 5);
            	let labelsText = new Array('#', _("Keybinding"), _("Profile Name"), _("Clone"), _("Outputs")+' ('+_("Name")+' | '+_("Display Name")+' | '+_("X")+' | '+_("Y")+' | '+_("Width")+' | '+_("Height")+' | '+_("Refresh Rate")+' | '+_("Rotation")+' | '+_("Primary")+')');
@@ -171,12 +210,15 @@ const ProfilesSettingsWidget = new GObject.Class({
                 iLabel = new Gtk.Label({label: (i+1).toString() + '.', xalign: 1, margin_right: 5});
                 grid.attach(iLabel, 0, i+1, 1, 1);
                 
-                if (i < 9)
-                    itemString = this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString()).toString();
-                else
+                if (i < 9) {
+                    itemString = SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString();
+                    iItem = this._createTreeViewKeyBinding(itemString);
+                    }
+                else {
                     itemString = '';
-                iLabel = new Gtk.Label({label: itemString, xalign: 0, margin_right: 5});
-                grid.attach(iLabel, 1, i+1, 1, 1);
+                    iItem = new Gtk.Label({label: itemString, xalign: 0, margin_right: 5});
+                    }
+                grid.attach(iItem, 1, i+1, 1, 1);
                 
                 itemString = Parser.getProfileItemAsString(this._profiles[i][0], 0);
                 iEntry = new Gtk.Entry({margin_right: 5});
