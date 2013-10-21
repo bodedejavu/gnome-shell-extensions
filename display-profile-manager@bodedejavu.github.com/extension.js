@@ -397,7 +397,7 @@ const DisplayProfileManager2 = new Lang.Class({
         },
         
     _displayConfigProxyMethodApplyConfigurationRemote: function(proxy) {
-        proxy.ApplyConfigurationRemote(this.serial_out, this.persistent_out, this.crtcs_out, this.outputs_out);
+        proxy.ApplyConfigurationRemote(this.serialOut, this.persistentOut, this.crtcsOut, this.outputsOut);
         },
         
     _displayConfigProxySignalMonitorsChanged: function(proxy) {
@@ -545,10 +545,22 @@ const DisplayProfileManager2 = new Lang.Class({
         },
         
     _setProfile: function(profile) {
-        this.serial_out = this.serial;
-        this.persistent_out = true;
-        this.crtcs_out = new Array();
-        this.outputs_out = new Array();
+        if (this.outputs.length > this.crtcs.length) {
+            global.log('Error: There are more outputs connected than available logical monitors (CRTC)! Aborting.');
+            return;
+            }
+            
+        for (let i = 0; i < this.outputs.length; i++) {
+            if (this.outputs[i][3].indexOf(this.crtcs[i][0]) == -1) {
+                global.log('Error: Too complicated resolution between outputs and logical monitors (CRTC)! Aborting.');
+                return;
+                }
+            }
+            
+        this.serialOut = this.serial;
+        this.persistentOut = true;
+        this.crtcsOut = new Array();
+        this.outputsOut = new Array();
         
         for (let i = 0; i < this.outputs.length; i++) {
             let profileIndex = -1;
@@ -559,8 +571,8 @@ const DisplayProfileManager2 = new Lang.Class({
                 }
                 
             if (profileIndex == -1) {
-                this.crtcs_out.push([this.crtcs[i][0], -1, this.crtcs[i][2], this.crtcs[i][3], this.crtcs[i][7], [this.outputs[i][0]], {}]);
-                this.outputs_out.push([this.outputs[i][0], {}]);
+                this.crtcsOut.push([this.crtcs[i][0], -1, this.crtcs[i][2], this.crtcs[i][3], this.crtcs[i][7], [this.outputs[i][0]], {}]);
+                this.outputsOut.push([this.outputs[i][0], {}]);
                 }
             else {
                 let newMode = this._getModeFromData(profile[profileIndex][4], profile[profileIndex][5], profile[profileIndex][6], i);
@@ -570,8 +582,8 @@ const DisplayProfileManager2 = new Lang.Class({
                 if (rotationIndex != -1)
                     transform = this.rotationMapping['wayland'][rotationIndex];
                     
-                this.crtcs_out.push([this.crtcs[i][0], newMode, profile[profileIndex][2], profile[profileIndex][3], transform, [this.outputs[i][0]], {}]);
-                this.outputs_out.push([this.outputs[i][0], {primary: GLib.Variant.new_boolean(profile[profileIndex][8])}]);
+                this.crtcsOut.push([this.crtcs[i][0], newMode, profile[profileIndex][2], profile[profileIndex][3], transform, [this.outputs[i][0]], {}]);
+                this.outputsOut.push([this.outputs[i][0], {primary: GLib.Variant.new_boolean(profile[profileIndex][8])}]);
                 }
             }
             
@@ -590,7 +602,7 @@ const DisplayProfileManager2 = new Lang.Class({
         
         for (let i = 0; i < profileA_.length; i++) {
             for (let j = 0; j < profileA_[0].length; j++) {
-                if (profileA_[i][j] != profileB_[i][j])
+                if ((j == 1 && profileA_[i][j].toLowerCase() != profileB_[i][j].toLowerCase()) || (j != 1 && profileA_[i][j] != profileB_[i][j]))
                     return false;
                 }
             }
@@ -602,7 +614,7 @@ const DisplayProfileManager2 = new Lang.Class({
             let outputFound = false;
             for (let j = 0; j < this.outputs.length; j++) {
                 if (this.outputs[j][4] == profile[i][0]) {
-                    if (this.outputs[j][7]['display-name'].unpack() != profile[i][1])
+                    if (this.outputs[j][7]['display-name'].unpack().toLowerCase() != profile[i][1].toLowerCase())
                         return false;
                     outputFound = true;
                     break;
@@ -618,7 +630,33 @@ const DisplayProfileManager2 = new Lang.Class({
         let profile = new Array();
         
         profile.push('Unnamed');
-        profile.push(false);
+        
+        let clone = true;
+        let modeData0 = null;
+        let monitorsCount = 0;
+        for (let i = 0; i < this.outputs.length; i++) {
+            let crtcIndex = this._getCrtcIndex(this.outputs[i][2]);
+            if (crtcIndex == -1)
+                continue;
+            if (this.crtcs[crtcIndex][2] != 0 || this.crtcs[crtcIndex][3] != 0) {
+                clone = false;
+                break;
+                }
+            let modeData = this._getDataFromMode(this.crtcs[crtcIndex][6]);
+            if (modeData0 == null) {
+                modeData0 = modeData;
+                }
+            else {
+                if (modeData[0] != modeData0[0] || modeData[1] != modeData0[1] || modeData[2] != modeData0[2]) {
+                    clone = false;
+                    break;
+                    }
+                }
+            monitorsCount += 1;
+            }
+        if (monitorsCount == 1)
+            clone = false;
+        profile.push(clone);
         
         for (let i = 0; i < this.outputs.length; i++) {
             let crtcIndex = this._getCrtcIndex(this.outputs[i][2]);
