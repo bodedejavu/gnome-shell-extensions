@@ -545,16 +545,9 @@ const DisplayProfileManager2 = new Lang.Class({
         },
         
     _setProfile: function(profile) {
-        if (this.outputs.length > this.crtcs.length) {
-            global.log('Error: There are more outputs connected than available logical monitors (CRTC)! Aborting.');
+        if (profile.length - 2 > this.crtcs.length) {
+            global.log('Error: There are more outputs to set than available logical monitors (CRTC)! Aborting.');
             return;
-            }
-            
-        for (let i = 0; i < this.outputs.length; i++) {
-            if (this.outputs[i][3].indexOf(this.crtcs[i][0]) == -1) {
-                global.log('Error: Too complicated resolution between outputs and logical monitors (CRTC)! Aborting.');
-                return;
-                }
             }
             
         this.serialOut = this.serial;
@@ -571,10 +564,14 @@ const DisplayProfileManager2 = new Lang.Class({
                 }
                 
             if (profileIndex == -1) {
-                this.crtcsOut.push([this.crtcs[i][0], -1, this.crtcs[i][2], this.crtcs[i][3], this.crtcs[i][7], [this.outputs[i][0]], {}]);
                 this.outputsOut.push([this.outputs[i][0], {}]);
                 }
             else {
+                if (this.outputs[i][3].indexOf(this.crtcs[this.crtcsOut.length][0]) == -1) {
+                    global.log('Error: Too complicated resolution between outputs and logical monitors (CRTC)! Aborting.');
+                    return;
+                    }
+                    
                 let newMode = this._getModeFromData(profile[profileIndex][4], profile[profileIndex][5], profile[profileIndex][6], i);
                 let rotation = profile[profileIndex][7];
                 let transform = this.rotationMapping['wayland'][0];
@@ -582,7 +579,7 @@ const DisplayProfileManager2 = new Lang.Class({
                 if (rotationIndex != -1)
                     transform = this.rotationMapping['wayland'][rotationIndex];
                     
-                this.crtcsOut.push([this.crtcs[i][0], newMode, profile[profileIndex][2], profile[profileIndex][3], transform, [this.outputs[i][0]], {}]);
+                this.crtcsOut.push([this.crtcs[this.crtcsOut.length][0], newMode, profile[profileIndex][2], profile[profileIndex][3], transform, [this.outputs[i][0]], {}]);
                 this.outputsOut.push([this.outputs[i][0], {primary: GLib.Variant.new_boolean(profile[profileIndex][8])}]);
                 }
             }
@@ -626,11 +623,7 @@ const DisplayProfileManager2 = new Lang.Class({
         return true;
         },
         
-    _getCurrentProfile: function() {
-        let profile = new Array();
-        
-        profile.push('Unnamed');
-        
+    _isCurrentClone: function() {
         let clone = true;
         let modeData0 = null;
         let monitorsCount = 0;
@@ -656,42 +649,55 @@ const DisplayProfileManager2 = new Lang.Class({
             }
         if (monitorsCount == 1)
             clone = false;
-        profile.push(clone);
+        return clone
+        },
+        
+    _getCurrentOutput: function(iOutput) {
+        let crtcIndex = this._getCrtcIndex(this.outputs[iOutput][2]);
+        if (crtcIndex == -1)
+            return null;
+        let modeData = this._getDataFromMode(this.crtcs[crtcIndex][6]);
+        
+        let width = modeData[0];
+        let height = modeData[1];
+        let refreshRate = modeData[2];
+        let x = this.crtcs[crtcIndex][2];
+        let y = this.crtcs[crtcIndex][3];
+        let transform = this.crtcs[crtcIndex][7];
+        let name = this.outputs[iOutput][4];
+        let displayName = this.outputs[iOutput][7]['display-name'].unpack();
+        let primary = this.outputs[iOutput][7]['primary'].unpack();
+        
+        let rotation = this.rotationMapping['xrandr'][0];
+        let rotationIndex = this.rotationMapping['wayland'].indexOf(transform);
+        if (rotationIndex != -1)
+            rotation = this.rotationMapping['xrandr'][rotationIndex];
+            
+        let output = new Array();
+        output.push(name);
+        output.push(displayName);
+        output.push(x);
+        output.push(y);
+        output.push(width);
+        output.push(height);
+        output.push(refreshRate);
+        output.push(rotation);
+        output.push(primary);
+        
+        return output;
+        },
+        
+    _getCurrentProfile: function() {
+        let profile = new Array();
+        
+        profile.push('Unnamed');
+        profile.push(this._isCurrentClone());
         
         for (let i = 0; i < this.outputs.length; i++) {
-            let crtcIndex = this._getCrtcIndex(this.outputs[i][2]);
-            if (crtcIndex == -1)
-                continue;
-            let modeData = this._getDataFromMode(this.crtcs[crtcIndex][6]);
-            
-            let width = modeData[0];
-            let height = modeData[1];
-            let refreshRate = modeData[2];
-            let x = this.crtcs[crtcIndex][2];
-            let y = this.crtcs[crtcIndex][3];
-            let transform = this.crtcs[crtcIndex][7];
-            let name = this.outputs[i][4];
-            let displayName = this.outputs[i][7]['display-name'].unpack();
-            let primary = this.outputs[i][7]['primary'].unpack();
-            
-            let rotation = this.rotationMapping['xrandr'][0];
-            let rotationIndex = this.rotationMapping['wayland'].indexOf(transform);
-            if (rotationIndex != -1)
-                rotation = this.rotationMapping['xrandr'][rotationIndex];
-                
-            let iOutput = new Array();
-            iOutput.push(name);
-            iOutput.push(displayName);
-            iOutput.push(x);
-            iOutput.push(y);
-            iOutput.push(width);
-            iOutput.push(height);
-            iOutput.push(refreshRate);
-            iOutput.push(rotation);
-            iOutput.push(primary);
-            
-           	profile.push(iOutput);
-        }
+            let output = this._getCurrentOutput(i);
+            if (output != null)
+           	    profile.push(output);
+       	    }
         return profile;
         },
         
