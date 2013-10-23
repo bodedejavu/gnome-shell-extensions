@@ -342,6 +342,7 @@ const DisplayProfileManager = new Lang.Class({
         }
     });
     
+    
 const DisplayProfileManager2 = new Lang.Class({
     Name: 'DisplayProfileManager.DisplayProfileManager',
     Extends: PopupMenu.PopupMenuSection,
@@ -738,7 +739,7 @@ const DisplayProfileManager2 = new Lang.Class({
             }
         return [width, height, refreshRate];
         }
-    });    
+    });
     
     
 let _displayProfileManager;

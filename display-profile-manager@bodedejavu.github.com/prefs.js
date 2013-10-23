@@ -67,7 +67,7 @@ const ProfilesSettingsWidget = new GObject.Class({
             
             let label3 = new Gtk.Label({label: '<b>'+_("Manage Profiles")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
             
-            text = _("The character \"|\" must not be used in the entry fields, except in the \"Outputs\" entries where it seperates the properties.\nThe first five profiles can be activated using a \"Keybinding\".\nPlease use the \"Expert Mode\" only if you know what you are doing.");
+            text = _("The character \"|\" must not be used in the entry fields, except in the \"Outputs\" entries where it seperates the properties.\nThe first nine profiles can be activated using a \"Keybinding\".\nPlease use the \"Expert Mode\" only if you know what you are doing.");
             let label4 = new Gtk.Label({label: text, use_markup: true, xalign: 0, margin_left:20, margin_bottom: 10});
             label4.set_line_wrap(true);
             
@@ -104,16 +104,27 @@ const ProfilesSettingsWidget = new GObject.Class({
         
     _buttonCmd: function(obj, i, j) {
         if (j == 0) {
+            let keybindingTemp = this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString());
+            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+2).toString()));
+            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+2).toString(), keybindingTemp);
+            
             let profileTemp = this._profiles[i];
             this._profiles[i] = this._profiles[i+1];
             this._profiles[i+1] = profileTemp;
             }
         else if (j == 1) {
+            let keybindingTemp = this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString());
+            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i).toString()));
+            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i).toString(), keybindingTemp);
+            
             let profileTemp = this._profiles[i];
             this._profiles[i] = this._profiles[i-1];
             this._profiles[i-1] = profileTemp;
             }
         else if (j == 2) {
+            if (i < 9) {
+                this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), []);
+                }
             this._profiles.splice(i, 1);
             }
             
@@ -147,6 +158,16 @@ const ProfilesSettingsWidget = new GObject.Class({
         this.add(this._gridProfiles);
         },
         
+    _clearTreeViewSelection: function(treeView, event) {
+        let listPaths;
+        let listStores;
+        let selection = treeView.get_selection();
+        [listPaths, listStores] = selection.get_selected_rows();
+        for (let i = 0; i < listPaths.length; i++) {
+            selection.unselect_path(listPaths[i]);
+            }
+        },
+        
     _keyBindingEdited: function(cellrendereraccel, pathString, accelKey, accelMods, hardwareKeyCode, listStore, iter, keyBindingProfileString) {
         let acceleratorString = Gtk.accelerator_name(accelKey, accelMods);
         this._updateKeyBinding(acceleratorString, listStore, iter);
@@ -167,7 +188,8 @@ const ProfilesSettingsWidget = new GObject.Class({
         },
         
     _createTreeViewKeyBinding: function(keyBindingProfileString) {
-        let treeView = new Gtk.TreeView({headers_visible: false});
+        let treeView = new Gtk.TreeView({headers_visible: false, margin_right: 5});
+        treeView.connect('focus-out-event', this._clearTreeViewSelection);
         let listStore = new Gtk.ListStore();
         listStore.set_column_types([GObject.TYPE_INT, GObject.TYPE_INT]);
         let iter = listStore.append([0, 0]);
