@@ -11,17 +11,10 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 const Parser = Me.imports.parser;
+const Common = Me.imports.common;
 
 const Gettext = imports.gettext.domain('display-profile-manager');
 const _ = Gettext.gettext;
-
-const SETTINGS_KEY_PROFILES = 'profiles';
-const SETTINGS_KEY_CURRENT_PROFILE = 'current-profile';
-const SETTINGS_KEY_EXPERT_MODE = 'expert-mode';
-const SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION = 'show-profile-description';
-const SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS = 'show-displays-settings';
-const SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS = 'show-display-profile-manager-settings';
-const SETTINGS_KEY_KEYBINDING_PROFILE = 'keybinding-profile-';
 
 
 const ProfilesSettingsWidget = new GObject.Class({
@@ -35,7 +28,7 @@ const ProfilesSettingsWidget = new GObject.Class({
         this._settings = Convenience.getSettings();
         
         let text;
-        let profileStringCurrent = this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE);
+        let profileStringCurrent = this._settings.get_string(Common.SETTINGS_KEY_CURRENT_PROFILE);
         if (!profileStringCurrent) {
             text = _("Error: Could not detect current screen configuration. Extension seems not to be running.");
             let label = new Gtk.Label({label: text, xalign: 0, margin_bottom: 10});
@@ -44,17 +37,17 @@ const ProfilesSettingsWidget = new GObject.Class({
         else {
             let label1a = new Gtk.Label({label: '<b>'+_("General Settings")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
             
-            let isActive1 = this._settings.get_boolean(SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION);
+            let isActive1 = this._settings.get_boolean(Common.SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION);
             let checkButton1 = new Gtk.CheckButton({label:_("Show Profile Description"), active: isActive1, margin_left:20, margin_bottom: 0});
-            checkButton1.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION));
+            checkButton1.connect('toggled', Lang.bind(this, this._changeCheckButton, Common.SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION));
             
-            let isActive2 = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS);
+            let isActive2 = this._settings.get_boolean(Common.SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS);
             let checkButton2 = new Gtk.CheckButton({label:_("Show \"Displays Settings\""), active: isActive2, margin_left:20, margin_bottom: 0});
-            checkButton2.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS));
+            checkButton2.connect('toggled', Lang.bind(this, this._changeCheckButton, Common.SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS));
             
-            let isActive3 = this._settings.get_boolean(SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS);
+            let isActive3 = this._settings.get_boolean(Common.SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS);
             let checkButton3 = new Gtk.CheckButton({label:_("Show \"Display Profile Manager Settings\""), active: isActive3, margin_left:20, margin_bottom: 10});
-            checkButton3.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS));
+            checkButton3.connect('toggled', Lang.bind(this, this._changeCheckButton, Common.SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS));
             
             let label1 = new Gtk.Label({label: '<b>'+_("Create Profile")+'</b>', use_markup: true, xalign: 0, margin_bottom: 10});
             
@@ -71,9 +64,9 @@ const ProfilesSettingsWidget = new GObject.Class({
             let label4 = new Gtk.Label({label: text, use_markup: true, xalign: 0, margin_left:20, margin_bottom: 10});
             label4.set_line_wrap(true);
             
-            let isExpert = this._settings.get_boolean(SETTINGS_KEY_EXPERT_MODE);
+            let isExpert = this._settings.get_boolean(Common.SETTINGS_KEY_EXPERT_MODE);
             let checkButton = new Gtk.CheckButton({label:_("Expert Mode"), active: isExpert, margin_left:20, margin_bottom: 10});
-            checkButton.connect('toggled', Lang.bind(this, this._changeCheckButton, SETTINGS_KEY_EXPERT_MODE));
+            checkButton.connect('toggled', Lang.bind(this, this._changeCheckButton, Common.SETTINGS_KEY_EXPERT_MODE));
             
             this.add(label1a);
             this.add(checkButton1);
@@ -86,7 +79,7 @@ const ProfilesSettingsWidget = new GObject.Class({
             this.add(label4);
             this.add(checkButton);
             
-            let profilesString = this._settings.get_string(SETTINGS_KEY_PROFILES);
+            let profilesString = this._settings.get_string(Common.SETTINGS_KEY_PROFILES);
             this._profiles = Parser.getProfilesFromString(profilesString);
             
             this._refreshGui(false);
@@ -94,7 +87,7 @@ const ProfilesSettingsWidget = new GObject.Class({
         },
         
     _addProfile: function(obj) {
-        let profileStringCurrent = this._settings.get_string(SETTINGS_KEY_CURRENT_PROFILE);
+        let profileStringCurrent = this._settings.get_string(Common.SETTINGS_KEY_CURRENT_PROFILE);
         let profileCurrent = Parser.getProfileFromString(profileStringCurrent);
         this._profiles.push(profileCurrent);
         
@@ -104,18 +97,18 @@ const ProfilesSettingsWidget = new GObject.Class({
         
     _buttonCmd: function(obj, i, j) {
         if (j == 0) {
-            let keybindingTemp = this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString());
-            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+2).toString()));
-            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+2).toString(), keybindingTemp);
+            let keybindingTemp = this._settings.get_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString());
+            this._settings.set_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), this._settings.get_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+2).toString()));
+            this._settings.set_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+2).toString(), keybindingTemp);
             
             let profileTemp = this._profiles[i];
             this._profiles[i] = this._profiles[i+1];
             this._profiles[i+1] = profileTemp;
             }
         else if (j == 1) {
-            let keybindingTemp = this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString());
-            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), this._settings.get_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i).toString()));
-            this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i).toString(), keybindingTemp);
+            let keybindingTemp = this._settings.get_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString());
+            this._settings.set_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), this._settings.get_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i).toString()));
+            this._settings.set_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i).toString(), keybindingTemp);
             
             let profileTemp = this._profiles[i];
             this._profiles[i] = this._profiles[i-1];
@@ -123,7 +116,7 @@ const ProfilesSettingsWidget = new GObject.Class({
             }
         else if (j == 2) {
             if (i < 9) {
-                this._settings.set_strv(SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), []);
+                this._settings.set_strv(Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString(), []);
                 }
             this._profiles.splice(i, 1);
             }
@@ -148,7 +141,7 @@ const ProfilesSettingsWidget = new GObject.Class({
         
     _saveProfile: function() {
         let profilesString = Parser.getProfilesAsString(this._profiles);
-       	this._settings.set_string(SETTINGS_KEY_PROFILES, profilesString);
+       	this._settings.set_string(Common.SETTINGS_KEY_PROFILES, profilesString);
         },
         
     _refreshGui: function(withReset) {
@@ -211,7 +204,7 @@ const ProfilesSettingsWidget = new GObject.Class({
         let grid = new Gtk.Grid({margin_left: 20});
         
         if (this._profiles.length > 0) {
-            let isExpert = this._settings.get_boolean(SETTINGS_KEY_EXPERT_MODE, isExpert);
+            let isExpert = this._settings.get_boolean(Common.SETTINGS_KEY_EXPERT_MODE, isExpert);
             
            	let iEntry;
            	let iGrid;
@@ -233,7 +226,7 @@ const ProfilesSettingsWidget = new GObject.Class({
                 grid.attach(iLabel, 0, i+1, 1, 1);
                 
                 if (i < 9) {
-                    itemString = SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString();
+                    itemString = Common.SETTINGS_KEY_KEYBINDING_PROFILE + (i+1).toString();
                     iItem = this._createTreeViewKeyBinding(itemString);
                     }
                 else {
