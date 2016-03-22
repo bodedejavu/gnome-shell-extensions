@@ -170,8 +170,16 @@ const DisplayProfileManager = new Lang.Class({
                 
                 keybinding_name = Common.SETTINGS_KEY_KEYBINDING_PROFILE + (profileNumber+1).toString();
                 keybinding_handler = Lang.bind(this, this._setProfileFromKeybinding, config, outputs, profile);
+                
                 if (Main.wm.addKeybinding) {
-                    keybinding = Main.wm.addKeybinding(keybinding_name, this._settings, Meta.KeyBindingFlags.NONE, Shell.KeyBindingMode.NORMAL | Shell.KeyBindingMode.MESSAGE_TRAY, keybinding_handler);
+                    let bindingMode;
+                    if (Shell.ActionMode) {
+                        bindingMode = Shell.ActionMode.NORMAL | Shell.ActionMode.MESSAGE_TRAY;
+                        }
+                    else {
+                        bindingMode = Shell.KeyBindingMode.NORMAL | Shell.KeyBindingMode.MESSAGE_TRAY;
+                        }
+                    keybinding = Main.wm.addKeybinding(keybinding_name, this._settings, Meta.KeyBindingFlags.NONE, bindingMode, keybinding_handler);
                     }
                 else {
                     keybinding = global.display.add_keybinding(keybinding_name, this._settings, Meta.KeyBindingFlags.NONE, keybinding_handler);

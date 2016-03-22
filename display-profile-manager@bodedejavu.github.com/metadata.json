@@ -3,6 +3,6 @@
     "name": "Display Profile Manager",
     "description": "Create and manage display profiles and access them easy in the GNOME Shell. A profile consists of one or multiple monitors with its configuration (e.g.: resolution, rotation, refresh rate...).\nThis extension uses GNOME libraries for detecting and setting the screen configuration. Therefore GNOME will remember the last active profile also after reboot. The behaviour on monitor changes (attaching or removing) is still handled by GNOME, but the extension keeps track of it and offers only available profiles.",
     "url": "https://github.com/bodedejavu/gnome-shell-extensions",
-    "shell-version": ["3.4", "3.6", "3.8", "3.10", "3.12"],
+    "shell-version": ["3.4", "3.6", "3.8", "3.10", "3.12", "3.14", "3.16", "3.18"],
     "settings-schema": "org.gnome.shell.extensions.display-profile-manager"
 }

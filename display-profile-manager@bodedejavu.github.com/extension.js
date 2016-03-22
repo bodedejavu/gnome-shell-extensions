@@ -15,7 +15,7 @@ let _displayProfileManager;
 function init() {
     Convenience.initTranslations("display-profile-manager");
     }
-    
+
 function enable() {
     if (Main.panel.statusArea && Main.panel.statusArea.aggregateMenu) {
         const Newer = Me.imports.newer;
@@ -29,9 +29,9 @@ function enable() {
         Main.panel.addToStatusArea('display-profile-manager', _displayProfileManager);
         }
     }
-    
+
 function disable() {
     _displayProfileManager.cleanup();
     _displayProfileManager.destroy();
     }
-    
+
