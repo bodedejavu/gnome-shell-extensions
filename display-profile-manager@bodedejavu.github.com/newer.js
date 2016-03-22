@@ -140,7 +140,6 @@ const DisplayProfileManager = new Lang.Class({
 
     _createMenu: function() {
         this.item.menu.removeAll();
-        this.item.status.text = '';
         this._clearKeybindings();
 
         this._insertProfileItems();
@@ -161,7 +160,6 @@ const DisplayProfileManager = new Lang.Class({
             for (let i = 0; i < this._profiles.length; i++) {
                 is_active = this._addProfileItem(i);
                 if (is_active == true && active_set == false) {
-                    this.item.status.text = this._profiles[i][0];
                     active_set = true;
                     }
                 }
