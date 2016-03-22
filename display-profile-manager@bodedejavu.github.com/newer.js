@@ -49,38 +49,38 @@ const DisplayConfigProxy = Gio.DBusProxy.makeProxyWrapper(DisplayConfigInterface
 const DisplayProfileManager = new Lang.Class({
     Name: 'DisplayProfileManager.DisplayProfileManager',
     Extends: PopupMenu.PopupMenuSection,
-    
+
     _init: function() {
         this.rotationMapping = {'wayland': [0, 1, 2, 3], 'xrandr': [1, 2, 4, 8]};
-        
+
         this.parent();
-        
+
         this.item = new PopupMenu.PopupSubMenuMenuItem('Display Profiles', true);
         this.item.icon.icon_name = 'preferences-desktop-display-symbolic';
         this.addMenuItem(this.item);
-        
+
         this._keybindings = new Array();
-        
+
         this._settings = Convenience.getSettings();
        	this._getCurrentSettings();
         this._handlerIdSettings = this._settings.connect('changed', Lang.bind(this, this._onSettingsChanged));
-        
+
         new this._displayConfigProxyWrapper(Lang.bind(this, this._displayConfigProxySignalMonitorsChanged));
         new this._displayConfigProxyWrapper(Lang.bind(this, this._displayConfigProxyMethodGetResourcesRemote));
         },
-        
+
     cleanup: function() {
         this._clearSignals();
         this._clearKeybindings();
         },
-        
+
     _clearSignals: function() {
         if (this._handlerIdMonitorsChanged)
             this._dbusMonitorsChanged.disconnectSignal(this._handlerIdMonitorsChanged);
         if (this._handlerIdSettings)
             this._settings.disconnect(this._handlerIdSettings);
         },
-        
+
     _clearKeybindings: function() {
         let keybinding;
         while (this._keybindings.length > 0) {
@@ -91,19 +91,19 @@ const DisplayProfileManager = new Lang.Class({
                 global.display.remove_keybinding(keybinding);
             }
         },
-        
+
     _displayConfigProxyWrapper: function(callback) {
         new DisplayConfigProxy(Gio.DBus.session, 'org.gnome.Shell', '/org/gnome/Mutter/DisplayConfig', callback);
         },
-        
+
     _displayConfigProxyMethodGetResourcesRemote: function(proxy) {
         proxy.GetResourcesRemote(Lang.bind(this, this._onMonitorsChanged));
         },
-        
+
     _displayConfigProxyMethodApplyConfigurationRemote: function(proxy) {
         proxy.ApplyConfigurationRemote(this.serialOut, this.persistentOut, this.crtcsOut, this.outputsOut);
         },
-        
+
     _displayConfigProxySignalMonitorsChanged: function(proxy) {
         this._dbusMonitorsChanged = proxy;
         this._handlerIdMonitorsChanged = proxy.connectSignal('MonitorsChanged', Lang.bind(this,
@@ -112,44 +112,44 @@ const DisplayProfileManager = new Lang.Class({
                 }
             ));
         },
-        
+
     _getCurrentSettings: function() {
         let profilesString = this._settings.get_string(Common.SETTINGS_KEY_PROFILES);
         this._profiles = Parser.getProfilesFromString(profilesString);
         },
-        
+
     _onSettingsChanged: function() {
         this._getCurrentSettings();
         this._createMenu();
         },
-        
+
     _onMonitorsChanged: function(resources) {
         this.serial = resources[0];
         this.crtcs = resources[1];
         this.outputs = resources[2];
         this.modes = resources[3];
-        
+
         this._profile = this._getCurrentProfile();
-        
+
         let profileStringCurrent = Parser.getProfileAsString(this._profile);
         if (profileStringCurrent != this._settings.get_string(Common.SETTINGS_KEY_CURRENT_PROFILE))
        	    this._settings.set_string(Common.SETTINGS_KEY_CURRENT_PROFILE, profileStringCurrent);
-            
+
         this._createMenu();
         },
-        
+
     _createMenu: function() {
         this.item.menu.removeAll();
         this.item.status.text = '';
         this._clearKeybindings();
-        
+
         this._insertProfileItems();
         this._insertSettingsItems();
         },
-        
+
     _insertProfileItems: function() {
         let item;
-        
+
         if (this._profiles.length == 0) {
             item = new PopupMenu.PopupMenuItem(_("No Profiles Defined"));
             item.actor.reactive = false;
@@ -167,11 +167,11 @@ const DisplayProfileManager = new Lang.Class({
                 }
             }
         },
-        
+
     _insertSettingsItems: function() {
         let showDisplaysSettings = this._settings.get_boolean(Common.SETTINGS_KEY_SHOW_DISPLAYS_SETTINGS);
         let showDisplayProfileManagerSettings = this._settings.get_boolean(Common.SETTINGS_KEY_SHOW_DISPLAY_PROFILE_MANAGER_SETTINGS);
-        
+
         if (showDisplaysSettings == true || showDisplayProfileManagerSettings == true)
             this.item.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         if (showDisplaysSettings == true) {
@@ -190,31 +190,31 @@ const DisplayProfileManager = new Lang.Class({
             this.item.menu.addMenuItem(item);
             }
         },
-        
+
     _addProfileItem: function(profileIndex) {
         let item;
         let is_active = false;
-        
+
         item = new PopupMenu.PopupMenuItem(this._profiles[profileIndex][0]);
         if (this._checkProfilePossible(this._profiles[profileIndex]) == true) {
             if (Common._compareProfiles(this._profiles[profileIndex], this._profile) == true) {
                 item.setOrnament(PopupMenu.Ornament.DOT);
                 is_active = true;
                 }
-                
+
             item.connect('activate', Lang.bind(this, this._setProfileFromMenuItem, this._profiles[profileIndex]));
-            
+
             if (profileIndex < 9) {
                 let keybinding;
                 let keybinding_name;
                 let keybinding_handler;
-                
+
                 keybinding_name = Common.SETTINGS_KEY_KEYBINDING_PROFILE + (profileIndex+1).toString();
                 keybinding_handler = Lang.bind(this, this._setProfileFromKeybinding, this._profiles[profileIndex]);
                 if (Main.wm.addKeybinding) {
                     let bindingMode;
                     if (Shell.ActionMode) {
-                        bindingMode = Shell.ActionMode.NORMAL | Shell.ActionMode.MESSAGE_TRAY; 
+                        bindingMode = Shell.ActionMode.NORMAL | Shell.ActionMode.MESSAGE_TRAY;
                         }
                     else {
                         bindingMode = Shell.KeyBindingMode.NORMAL | Shell.KeyBindingMode.MESSAGE_TRAY;
@@ -231,7 +231,7 @@ const DisplayProfileManager = new Lang.Class({
             item.actor.reactive = false;
             }
         this.item.menu.addMenuItem(item);
-        
+
         let showProfileDescription = this._settings.get_boolean(Common.SETTINGS_KEY_SHOW_PROFILE_DESCRIPTION);
         if (showProfileDescription == true) {
             let profileDescription;
@@ -245,29 +245,29 @@ const DisplayProfileManager = new Lang.Class({
                 this.item.menu.addMenuItem(item);
                 }
             }
-            
+
         return is_active;
         },
-        
+
     _setProfileFromMenuItem: function(item, event, profile) {
         this._setProfile(profile);
         },
-        
+
     _setProfileFromKeybinding: function(display, screen, dummy, keybinding, profile) {
         this._setProfile(profile);
         },
-        
+
     _setProfile: function(profile) {
         if (profile.length - 2 > this.crtcs.length) {
             global.log('Error: There are more outputs to set than available logical monitors (CRTC)! Aborting.');
             return;
             }
-            
+
         this.serialOut = this.serial;
         this.persistentOut = true;
         this.crtcsOut = new Array();
         this.outputsOut = new Array();
-        
+
         for (let i = 0; i < this.outputs.length; i++) {
             let profileIndex = -1;
             for (let j = 2; j < profile.length; j++) {
@@ -275,7 +275,7 @@ const DisplayProfileManager = new Lang.Class({
                     profileIndex = j;
                     }
                 }
-                
+
             if (profileIndex == -1) {
                 this.outputsOut.push([this.outputs[i][0], {}]);
                 }
@@ -284,22 +284,22 @@ const DisplayProfileManager = new Lang.Class({
                     global.log('Error: Too complicated resolution between outputs and logical monitors (CRTC)! Aborting.');
                     return;
                     }
-                    
+
                 let newMode = this._getModeFromData(profile[profileIndex][4], profile[profileIndex][5], profile[profileIndex][6], i);
                 let rotation = profile[profileIndex][7];
                 let transform = this.rotationMapping['wayland'][0];
                 let rotationIndex = this.rotationMapping['xrandr'].indexOf(rotation);
                 if (rotationIndex != -1)
                     transform = this.rotationMapping['wayland'][rotationIndex];
-                    
+
                 this.crtcsOut.push([this.crtcs[this.crtcsOut.length][0], newMode, profile[profileIndex][2], profile[profileIndex][3], transform, [this.outputs[i][0]], {}]);
                 this.outputsOut.push([this.outputs[i][0], {primary: GLib.Variant.new_boolean(profile[profileIndex][8])}]);
                 }
             }
-            
+
         new this._displayConfigProxyWrapper(Lang.bind(this, this._displayConfigProxyMethodApplyConfigurationRemote));
         },
-        
+
     _checkProfilePossible: function(profile) {
         for (let i = 2; i < profile.length; i++) {
             let outputFound = false;
@@ -316,7 +316,7 @@ const DisplayProfileManager = new Lang.Class({
             }
         return true;
         },
-        
+
     _isCurrentClone: function() {
         let clone = true;
         let modeData0 = null;
@@ -345,13 +345,13 @@ const DisplayProfileManager = new Lang.Class({
             clone = false;
         return clone
         },
-        
+
     _getCurrentOutput: function(iOutput) {
         let crtcIndex = this._getCrtcIndex(this.outputs[iOutput][2]);
         if (crtcIndex == -1)
             return null;
         let modeData = this._getDataFromMode(this.crtcs[crtcIndex][6]);
-        
+
         let width = modeData[0];
         let height = modeData[1];
         let refreshRate = modeData[2];
@@ -361,12 +361,12 @@ const DisplayProfileManager = new Lang.Class({
         let name = this.outputs[iOutput][4];
         let displayName = this.outputs[iOutput][7]['display-name'].unpack();
         let primary = this.outputs[iOutput][7]['primary'].unpack();
-        
+
         let rotation = this.rotationMapping['xrandr'][0];
         let rotationIndex = this.rotationMapping['wayland'].indexOf(transform);
         if (rotationIndex != -1)
             rotation = this.rotationMapping['xrandr'][rotationIndex];
-            
+
         let output = new Array();
         output.push(name);
         output.push(displayName);
@@ -377,16 +377,16 @@ const DisplayProfileManager = new Lang.Class({
         output.push(refreshRate);
         output.push(rotation);
         output.push(primary);
-        
+
         return output;
         },
-        
+
     _getCurrentProfile: function() {
         let profile = new Array();
-        
+
         profile.push('Unnamed');
         profile.push(this._isCurrentClone());
-        
+
         for (let i = 0; i < this.outputs.length; i++) {
             let output = this._getCurrentOutput(i);
             if (output != null)
@@ -394,7 +394,7 @@ const DisplayProfileManager = new Lang.Class({
        	    }
         return profile;
         },
-        
+
     _getCrtcIndex: function(crtc) {
         let crtcIndex = -1;
         for (let i = 0; i < this.crtcs.length; i++) {
@@ -405,7 +405,7 @@ const DisplayProfileManager = new Lang.Class({
             }
         return crtcIndex;
         },
-        
+
     _getModeFromData: function(width, height, refreshRate, iOutput) {
         let mode = -1;
         for (let i = 0; i < this.modes.length; i++) {
@@ -416,12 +416,12 @@ const DisplayProfileManager = new Lang.Class({
             }
         return mode;
         },
-        
+
     _getDataFromMode: function(mode) {
         let width = 0;
         let height = 0;
         let refreshRate = 0;
-        
+
         for (let i = 0; i < this.modes.length; i++) {
             if (this.modes[i][0] == mode) {
                 width = this.modes[i][2];
@@ -433,4 +433,4 @@ const DisplayProfileManager = new Lang.Class({
         return [width, height, refreshRate];
         }
     });
-    
+
